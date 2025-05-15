@@ -1,7 +1,11 @@
 import React from "react";
 import Swal from "sweetalert2";
 
-const Navbar = () => (
+interface NavbarProps {
+  onInstructionClick: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
   <nav
     className="navbar navbar-expand-lg navbar-dark"
     style={{ backgroundColor: "#2196f3" }}
@@ -13,6 +17,7 @@ const Navbar = () => (
         style={{ height: "40px", marginRight: "10px" }}
       />
     </a>
+
     <button
       className="navbar-toggler"
       type="button"
@@ -24,29 +29,29 @@ const Navbar = () => (
     >
       <span className="navbar-toggler-icon"></span>
     </button>
+
     <div className="collapse navbar-collapse" id="navbarNav">
       <ul className="navbar-nav">
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">
-            Home
-          </a>
+          <a className="nav-link text-white fw-bold" href="#">About</a>
         </li>
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">
-            Dashboard
-          </a>
+          <a className="nav-link text-white fw-bold" href="#">Dashboard</a>
         </li>
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">
-            Preference
-          </a>
+          <a className="nav-link text-white fw-bold" href="#">Preference</a>
         </li>
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">
+          <button
+            className="nav-link text-white fw-bold btn btn-link"
+            style={{ textDecoration: "none" }}
+            onClick={onInstructionClick}
+          >
             Instruction
-          </a>
+          </button>
         </li>
       </ul>
+
       <button
         className="btn btn-link fw-bold d-flex align-items-center ms-auto"
         style={{
@@ -58,7 +63,7 @@ const Navbar = () => (
           Swal.fire({
             icon: "warning",
             title: "Avertissement",
-            html: "⚠️ L'application en français est en cours de développement. Elle sera disponible bientôt !<br>Appuyez sur <strong>OK </strong>pour continuer la navigation",
+            html: "⚠️ L'application en français est en cours de développement. Elle sera disponible bientôt !<br>Appuyez sur <strong>OK</strong> pour continuer la navigation",
             confirmButtonText: "<strong>OK</strong>",
           })
         }
