@@ -11,3 +11,46 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding-bottom: 20px;
+}
+
+/* Regular state */
+.hydro-title {
+  color: #007bff; /* Bootstrap blue */
+}
+
+/* Dark Mode Styles */
+.app-dark-mode {
+  background-color: #121212;
+  color: white;
+}
+
+.app-dark-mode .hydro-title {
+  color: #f1c40f; /* Yellow */
+}
+
+
+.dropdown-menu {
+  background-color: white;
+  color: black;
+}
+
+/* Dark mode overrides */
+.app-dark-mode .dropdown-menu {
+  background-color: #1e1e1e;
+  color: white;
+}
+
+.app-dark-mode .dropdown-item {
+  color: white;
+}
+
+.app-dark-mode .dropdown-item:hover,
+.app-dark-mode .dropdown-item:focus {
+  background-color: #333;
+  color: #f1c40f; /* Optional highlight */
+}

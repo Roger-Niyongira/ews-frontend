@@ -1,24 +1,30 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import Navbar from "./components/Navbar";
+import TopButtons from "./components/TopButtons";
+import Body from "./components/Body";
+import { useState, useEffect } from "react";
+import "./App.css";
 
 function App() {
+  const [date, setDate] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    setDate(new Date().toISOString().split("T")[0]);
+  }, []);
+
+  const appClass = darkMode
+    ? "app-dark-mode flex-grow-1 d-flex flex-column"
+    : "flex-grow-1 d-flex flex-column";
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="d-flex flex-column vh-100">
+      <Navbar />
+      <div className={appClass}>
+        <TopButtons darkMode={darkMode} setDarkMode={setDarkMode} />
+        <div className="flex-grow-1 d-flex overflow-hidden">
+          <Body />
+        </div>
+      </div>
     </div>
   );
 }
