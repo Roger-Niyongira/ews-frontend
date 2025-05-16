@@ -21,7 +21,7 @@ function App() {
     } else if (location.pathname === "/preference") {
       document.title = "EWS | Preference";
     } else {
-      document.title = "EWS | Afrique";
+      document.title = "EWS | Dashboard";
     }
   }, [location.pathname]);
 
