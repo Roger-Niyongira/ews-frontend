@@ -8,10 +8,22 @@ interface TopButtonsProps {
 
 const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [location, setLocation] = useState("Loading...");
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
+
+    // Fetch user's city and country code via IP
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        setLocation(`${data.city} [${data.country_code}]`);
+      })
+      .catch(() => {
+        setLocation("Unknown [--]");
+      });
+
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -26,7 +38,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
       </div>
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
-          LOCATION: Ottawa [CA]
+          LOCATION: {location}
         </button>
       </div>
       <div>
@@ -46,7 +58,10 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
       </div>
       <div>
         <Dropdown>
-          <Dropdown.Toggle className="btn btn-info fw-bold w-100" style={buttonStyle}>
+          <Dropdown.Toggle
+            className="btn btn-info fw-bold w-100"
+            style={buttonStyle}
+          >
             FILTER SEARCH
           </Dropdown.Toggle>
           <Dropdown.Menu>
@@ -60,16 +75,19 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
   );
 
   return (
-    <div className="container-fluid my-3">
+    <div className="container-fluid mt-3 mb-2">
       <div className="row row-cols-auto g-2 justify-content-center flex-wrap">
         {isMobile ? (
           <Dropdown>
-            <Dropdown.Toggle className="btn btn-info fw-bold" style={buttonStyle}>
+            <Dropdown.Toggle
+              className="btn btn-info fw-bold"
+              style={buttonStyle}
+            >
               ☰ INFO
             </Dropdown.Toggle>
             <Dropdown.Menu>
               <Dropdown.Item>WARNING LEVEL: LOW</Dropdown.Item>
-              <Dropdown.Item>LOCATION: Ottawa [CA]</Dropdown.Item>
+              <Dropdown.Item>LOCATION: {location}</Dropdown.Item>
               <Dropdown.Item>DATE: 2025-05-14</Dropdown.Item>
               <Dropdown.Item>DISPLAY NOTES</Dropdown.Item>
               <Dropdown.Item>SCENARIOS</Dropdown.Item>

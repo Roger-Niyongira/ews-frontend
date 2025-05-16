@@ -7,8 +7,8 @@ const LeftPanel = () => {
       {/* top box */}
       <div className="p-3 border border-primary border-2 rounded flex-grow-1">
         <h4 className="hydro-title fw-bold">HYDROLOGICAL INFO</h4>
-        <p>
-          Cliquer sur une ville afin de créer une courbe des précipitations
+        <p style={{ fontSize: 20, opacity: 0.5, fontWeight: "bold"}}>
+          Click on a station marker to plot its precipitation forecast
         </p>
       </div>
 
