@@ -1,5 +1,6 @@
 import React from "react";
 import Swal from "sweetalert2";
+import { Link } from "react-router-dom";
 
 interface NavbarProps {
   onInstructionClick: () => void;
@@ -33,13 +34,19 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
     <div className="collapse navbar-collapse" id="navbarNav">
       <ul className="navbar-nav">
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">About</a>
+          <Link className="nav-link text-white fw-bold" to="/about">
+            About
+          </Link>
         </li>
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">Dashboard</a>
+          <Link className="nav-link text-white fw-bold" to="/">
+            Dashboard
+          </Link>
         </li>
         <li className="nav-item">
-          <a className="nav-link text-white fw-bold" href="#">Preference</a>
+          <a className="nav-link text-white fw-bold" href="#">
+            Preference
+          </a>
         </li>
         <li className="nav-item">
           <button

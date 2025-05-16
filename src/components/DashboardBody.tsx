@@ -1,6 +1,6 @@
 import React from "react";
-import LeftPanel from "./LeftPanel";
-import MapPanel from "./MapPanel";
+import LeftPanel from "./DashboardLeftPanel";
+import MapPanel from "./DashboardMapPanel";
 
 const Body = () => (
   <div className="container-fluid h-100 p-2">

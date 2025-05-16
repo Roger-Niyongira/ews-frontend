@@ -6,7 +6,7 @@ interface InstructionPanelProps {
 
 const InstructionPanel: React.FC<InstructionPanelProps> = ({ onClose }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const [position, setPosition] = useState({ x: 20, y: 20 });
+  const [position, setPosition] = useState({ x: 20, y: 100 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
