@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
+import ScenarioPanel from "./DashboardScenarioPanel";
+import NotesPanel from "./DashboardNotesPanel";
 
 interface TopButtonsProps {
   darkMode: boolean;
@@ -9,12 +11,17 @@ interface TopButtonsProps {
 const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [location, setLocation] = useState("Loading...");
+  const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
+  const [showScenarioPanel, setShowScenarioPanel] = useState(false);
+  const [showNotesPanel, setShowNotesPanel] = useState(false);
+  const [currentDate, setCurrentDate] = useState(
+    () => new Date().toISOString().split("T")[0]
+  );
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
 
-    // Fetch user's city and country code via IP
     fetch("https://ipapi.co/json/")
       .then((res) => res.json())
       .then((data) => {
@@ -43,18 +50,37 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
       </div>
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
-          DATE: 2025-05-14
+          DATE: {currentDate}
         </button>
       </div>
-      <div>
-        <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
+      <div style={{ position: "relative" }}>
+        <button
+          className="btn btn-info fw-bold w-100"
+          style={buttonStyle}
+          onClick={() => setShowNotesPanel(!showNotesPanel)}
+        >
           DISPLAY NOTES
         </button>
+        {showNotesPanel && (
+          <NotesPanel onClose={() => setShowNotesPanel(false)} />
+        )}
       </div>
-      <div>
-        <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
+      <div style={{ position: "relative" }}>
+        <button
+          className="btn btn-info fw-bold w-100"
+          style={buttonStyle}
+          onClick={() => setShowScenarioPanel(!showScenarioPanel)}
+        >
           SCENARIOS
         </button>
+
+        {showScenarioPanel && (
+          <ScenarioPanel
+            onClose={() => setShowScenarioPanel(false)}
+            thresholds={thresholds}
+            setThresholds={setThresholds}
+          />
+        )}
       </div>
       <div>
         <Dropdown>
