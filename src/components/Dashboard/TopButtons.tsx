@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import ScenarioPanel from "./DashboardScenarioPanel";
-import NotesPanel from "./DashboardNotesPanel";
+import ScenarioPanel from "./ScenarioPanel";
+import NotesPanel from "./NotesPanel";
 
 interface TopButtonsProps {
   darkMode: boolean;

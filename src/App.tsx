@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import InstructionPanel from "./components/InstructionPanel";
 import Navbar from "./components/Navbar";
-import TopButtons from "./components/DashboardTopButtons";
-import Body from "./components/DashboardBody";
+import TopButtons from "./components/Dashboard/TopButtons";
+import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
 import "./App.css";
 
