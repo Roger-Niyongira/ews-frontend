@@ -13,7 +13,7 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
   >
     <a className="navbar-brand" href="/">
       <img
-        src="ews_icon.png"
+        src={process.env.PUBLIC_URL + "/ews_icon.png"}
         alt="EWS Logo"
         style={{ height: "40px", marginRight: "10px" }}
       />
