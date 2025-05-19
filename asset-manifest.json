@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/ews-frontend/static/css/main.de44cc67.css",
-    "main.js": "/ews-frontend/static/js/main.510545bb.js",
+    "main.js": "/ews-frontend/static/js/main.f31034dc.js",
     "static/js/453.8ab44547.chunk.js": "/ews-frontend/static/js/453.8ab44547.chunk.js",
     "index.html": "/ews-frontend/index.html",
     "main.de44cc67.css.map": "/ews-frontend/static/css/main.de44cc67.css.map",
-    "main.510545bb.js.map": "/ews-frontend/static/js/main.510545bb.js.map",
+    "main.f31034dc.js.map": "/ews-frontend/static/js/main.f31034dc.js.map",
     "453.8ab44547.chunk.js.map": "/ews-frontend/static/js/453.8ab44547.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.de44cc67.css",
-    "static/js/main.510545bb.js"
+    "static/js/main.f31034dc.js"
   ]
 }
