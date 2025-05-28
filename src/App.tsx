@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import InstructionPanel from "./components/InstructionPanel";
 import Navbar from "./components/Navbar";
 import TopButtons from "./components/Dashboard/TopButtons";
@@ -12,9 +12,8 @@ function App() {
   const [darkMode, setDarkMode] = useState(true);
   const location = useLocation();
 
-  const isDashboard = location.pathname === "/";
+  const isDashboard = location.pathname === "/dashboard";
 
-  // Set page title based on current route
   useEffect(() => {
     if (location.pathname === "/about") {
       document.title = "EWS | About";
@@ -25,7 +24,6 @@ function App() {
     }
   }, [location.pathname]);
 
-  // Auto-close instruction panel on route change
   useEffect(() => {
     setShowInstruction(false);
   }, [location.pathname]);
@@ -47,8 +45,11 @@ function App() {
 
         <div className="flex-grow-1 d-flex overflow-hidden position-relative">
           <Routes>
-            <Route path="/" element={<Body />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/"          element={<Body />} />
+            <Route path="/dashboard" element={<Body />} />
             <Route path="/about" element={<AboutPage />} />
+            {/* Add /preference here if needed */}
           </Routes>
         </div>
       </div>

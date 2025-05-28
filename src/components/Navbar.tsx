@@ -54,7 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
                 html: `
           <p>This page is under development. Here's a preview:</p>
           <img 
-          src="/preference_mockup.png" 
+          src="${process.env.PUBLIC_URL}/preference_mockup.png"
           alt="Preview" style="height: 160px; object-fit: contain; border-radius: 10px;" />
         `,
                 confirmButtonText: "OK",

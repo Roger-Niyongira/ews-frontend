@@ -16,7 +16,8 @@ const AboutPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Half of all recorded disasters over a 50-year period were weather-related.
+                  Half of all recorded disasters over a 50-year period were
+                  weather-related.
                 </a>
               </li>
               <li className="mb-2">
@@ -26,7 +27,8 @@ const AboutPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Disaster damage can be reduced by 30% with a 24-hour early warning.
+                  Disaster damage can be reduced by 30% with a 24-hour early
+                  warning.
                 </a>
               </li>
               <li className="mb-2">
@@ -36,7 +38,8 @@ const AboutPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  An early warning system can help avoid US $3–16 billion per year of losses globally.
+                  An early warning system can help avoid US $3–16 billion per
+                  year of losses globally.
                 </a>
               </li>
             </ul>
@@ -45,14 +48,19 @@ const AboutPage = () => {
 
         {/* Main content */}
         <div className="col-md-9">
-          <h1 className="text-center fw-bold">Welcome to the Early Warning System (EWS) Page</h1>
+          <h1 className="text-center fw-bold">
+            Welcome to the Early Warning System (EWS) Page
+          </h1>
 
           <div className="mt-4">
             <h2 className="text-primary">About the Project</h2>
             <p>
-              Natural disasters such as floods, droughts, and hurricanes are becoming increasingly frequent and intense due to climate change. 
-              These disasters cause devastating impacts on lives, infrastructure, and economies, especially in developing countries and marginalized communities.
-              Our goal is to reduce disaster risks with an effective <strong>Early Warning System (EWS)</strong>, 
+              Natural disasters such as floods, droughts, and hurricanes are
+              becoming increasingly frequent and intense due to climate change.
+              These disasters cause devastating impacts on lives,
+              infrastructure, and economies, especially in developing countries
+              and marginalized communities. Our goal is to reduce disaster risks
+              with an effective <strong>Early Warning System (EWS)</strong>,
               designed based on the United Nations'{" "}
               <a
                 href="https://www.un.org/en/climatechange/early-warnings-for-all"
@@ -61,8 +69,9 @@ const AboutPage = () => {
               >
                 Four Pillars of Early Warnings for All
               </a>
-              : disaster risk knowledge and management, detection, observation, monitoring, analysis, and forecasting, 
-              warning dissemination and communication, preparedness and response capabilities.
+              : disaster risk knowledge and management, detection, observation,
+              monitoring, analysis, and forecasting, warning dissemination and
+              communication, preparedness and response capabilities.
             </p>
           </div>
 
@@ -71,17 +80,23 @@ const AboutPage = () => {
             {/* Left Column */}
             <div className="col-md-6">
               <p>
-                Our Early Warning System is being developed to empower communities with timely alerts and critical information during emergencies. 
-                By harnessing the power of real-time data, our system aims to provide early notifications for natural disasters related to flooding and drought.
+                Our Early Warning System is being developed to empower
+                communities with timely alerts and critical information during
+                emergencies. By harnessing the power of real-time data, our
+                system aims to provide early notifications for natural disasters
+                related to flooding and drought.
               </p>
               <p>
-                This initiative is not only designed to inform but also to guide communities on how to prepare and respond effectively during emergencies. 
-                With user-friendly dashboards and decision-support tools, our EWS serves to enhance community resilience and safety.
+                This initiative is not only designed to inform but also to guide
+                communities on how to prepare and respond effectively during
+                emergencies. With user-friendly dashboards and decision-support
+                tools, our EWS serves to enhance community resilience and
+                safety.
               </p>
 
               <div className="text-center">
                 <img
-                  src="/flood_Tchad.png"
+                  src={process.env.PUBLIC_URL + "/flood_Tchad.png"}
                   alt="Flood Djamena"
                   className="img-fluid"
                 />
@@ -102,7 +117,7 @@ const AboutPage = () => {
             {/* Right Column */}
             <div className="col-md-6 text-center">
               <img
-                src="/UN_pillars_for_ews.png"
+                src={process.env.PUBLIC_URL + "/UN_pillars_for_ews.png"}
                 alt="United Nations' EWS Pillars"
                 className="img-fluid"
               />
