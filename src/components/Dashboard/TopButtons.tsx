@@ -40,7 +40,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
     <>
       <div>
         <button className="btn btn-success fw-bold w-100" style={buttonStyle}>
-          WARNING LEVEL: LOW
+          WARNING LEVEL: N/A
         </button>
       </div>
       <div>
