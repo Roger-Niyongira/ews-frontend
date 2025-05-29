@@ -22,7 +22,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
 
-    fetch("https://ipapi.co/json/")
+    fetch("https://geolocation-db.com/json/")
       .then((res) => res.json())
       .then((data) => {
         setLocation(`${data.city} [${data.country_code}]`);
