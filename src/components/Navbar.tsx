@@ -45,25 +45,25 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
         </li>
         <li className="nav-item">
           <button
-            className="nav-link text-white fw-bold btn btn-link"
-            style={{ textDecoration: "none" }}
-            onClick={() =>
-              Swal.fire({
-                icon: "info",
-                title: "⚙️ Preferences settings Coming Soon!",
-                html: `
-          <p>This page is under development. Here's a preview:</p>
-          <img 
+  className="nav-link text-white fw-bold btn btn-link"
+  style={{ textDecoration: "none" }}
+  onClick={() =>
+    Swal.fire({
+      icon: "info",
+      html: `
+        <p style="font-size: 14px;">This page is under development. See Preview Below:</p>
+        <img 
           src="${process.env.PUBLIC_URL}/preference_mockup.png"
-          alt="Preview" style="height: 160px; object-fit: contain; border-radius: 10px;" />
-        `,
-                confirmButtonText: "OK",
-                width: 400,
-              })
-            }
-          >
-            Preference
-          </button>
+          alt="Preview"
+          style="height: 260px; object-fit: contain; border-radius: 10px; margin-top: 10px;" />
+      `,
+      confirmButtonText: "OK",
+      width: 400,
+    })
+  }
+>
+  Preference
+</button>
         </li>
         <li className="nav-item">
           <button
