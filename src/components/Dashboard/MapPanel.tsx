@@ -1,14 +1,18 @@
+// MapPanel.tsx
+
 import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
 
+// 1. Extend City here to match the actual JSON (including warning_level)
 interface City {
   id: number;
   city: string;
   country: string;
   latitude: number;
   longitude: number;
+  warning_level: "green" | "orange" | "red";
 }
 
 interface MapPanelProps {
@@ -22,6 +26,8 @@ function MapPanel({ onCityClick }: MapPanelProps) {
   useEffect(() => {
     const fetchCities = () => {
       axios
+        // 2. Even though Body.tsx’s City type doesn’t mention warning_level,
+        //    this GET still returns warning_level in its JSON.
         .get<City[]>("http://127.0.0.1:8000/api/cities/")
         .then((res) => {
           setCities(res.data);
@@ -50,23 +56,34 @@ function MapPanel({ onCityClick }: MapPanelProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {cities.map((city) => (
-          <CircleMarker
-            key={city.id}
-            center={[city.latitude, city.longitude]}
-            radius={4}
-            fillOpacity={0.6}
-            color="grey"
-            stroke={false}
-            eventHandlers={{
-              click: () => {
-                onCityClick(city.id);
-              },
-            }}
-          >
-            <Tooltip>{city.city}, {city.country}</Tooltip>
-          </CircleMarker>
-        ))}
+        {cities.map((city) => {
+          // 3. Decide circle color based on warning_level
+          const fillColor = city.warning_level;
+          return (
+            <CircleMarker
+              key={city.id}
+              center={[city.latitude, city.longitude]}
+              radius={6}
+              // use pathOptions so both border and fill match warning_level
+              pathOptions={{
+                color: fillColor,
+                fillColor: fillColor,
+                fillOpacity: 0.6,
+                stroke: false,
+              }}
+              eventHandlers={{
+                click: () => {
+                  onCityClick(city.id);
+                },
+              }}
+            >
+              <Tooltip>
+                {city.city}, {city.country} —{" "}
+                {city.warning_level.toUpperCase()}
+              </Tooltip>
+            </CircleMarker>
+          );
+        })}
       </MapContainer>
 
       {error && (
