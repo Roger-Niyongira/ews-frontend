@@ -11,28 +11,30 @@ interface City {
   longitude: number;
 }
 
-function MapPanel() {
+interface MapPanelProps {
+  onCityClick: (cityId: number) => void;
+}
+
+function MapPanel({ onCityClick }: MapPanelProps) {
   const [cities, setCities] = useState<City[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCities = () => {
       axios
-        .get("http://127.0.0.1:8000/api/cities/")
+        .get<City[]>("http://127.0.0.1:8000/api/cities/")
         .then((res) => {
           setCities(res.data);
           setError(null);
         })
         .catch(() => {
-          setCities([]);  // ensure we clear any stale data
-          setError("⚠️ Unable to load fetch and load data.");
+          setCities([]);
+          setError("⚠️ Unable to fetch city list.");
         });
     };
 
     fetchCities();
-
-    const interval = setInterval(fetchCities, 60*1000); // hourly60 * 60 * 1000
-
+    const interval = setInterval(fetchCities, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -48,19 +50,23 @@ function MapPanel() {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {cities.length > 0 &&
-          cities.map((city) => (
-            <CircleMarker
-              key={city.id}
-              center={[city.latitude, city.longitude]}
-              radius={4}
-              fillOpacity={0.6}
-              color="grey"
-              stroke={false}
-            >
-              <Tooltip>{city.city}, {city.country}</Tooltip>
-            </CircleMarker>
-          ))}
+        {cities.map((city) => (
+          <CircleMarker
+            key={city.id}
+            center={[city.latitude, city.longitude]}
+            radius={4}
+            fillOpacity={0.6}
+            color="grey"
+            stroke={false}
+            eventHandlers={{
+              click: () => {
+                onCityClick(city.id);
+              },
+            }}
+          >
+            <Tooltip>{city.city}, {city.country}</Tooltip>
+          </CircleMarker>
+        ))}
       </MapContainer>
 
       {error && (
