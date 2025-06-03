@@ -1,3 +1,4 @@
+import Swal from "sweetalert2";
 import React, { useState, useEffect } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import ScenarioPanel from "./ScenarioPanel";
@@ -36,13 +37,17 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
 
   const buttonStyle = { minWidth: "180px" };
 
+  const showSwatAlert = () => {
+    Swal.fire({
+      title: "NEW SWAT MODEL",
+      text: "SWAT EWS Model is being developed. More to come soon!",
+      icon: "info",
+      confirmButtonText: "OK"
+    })
+  }
+
   const renderButtons = () => (
     <>
-      <div>
-        <button className="btn btn-success fw-bold w-100" style={buttonStyle}>
-          WARNING LEVEL: N/A
-        </button>
-      </div>
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
           LOCATION: {location}
@@ -91,11 +96,19 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
             FILTER SEARCH
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            <Dropdown.Item href="#">Option 1</Dropdown.Item>
-            <Dropdown.Item href="#">Option 2</Dropdown.Item>
-            <Dropdown.Item href="#">Option 3</Dropdown.Item>
+            <Dropdown.Item href="#">Watershed</Dropdown.Item>
+            <Dropdown.Item href="#">Country</Dropdown.Item>
+            <Dropdown.Item href="#">Model</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
+      </div>
+      <div>
+        <button 
+        className="btn btn-success fw-bold w-100"
+         style={buttonStyle}
+         onClick={showSwatAlert}>
+          VIEW SWAT EWS
+        </button>
       </div>
     </>
   );

@@ -102,7 +102,7 @@ const ScenarioPanel: React.FC<ScenarioPanelProps> = ({
           className="btn btn-secondary w-100 fw-bold d-flex justify-content-between align-items-center"
           onClick={() => console.log("Open cost impact window")}
         >
-          <span>Advance: Cost impact</span>
+          <span>Advanced: Cost analysis with agents</span>
           <i className="bi bi-box-arrow-up-right"></i>
         </button>
       </div>
