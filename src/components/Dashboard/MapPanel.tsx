@@ -1,11 +1,18 @@
 // MapPanel.tsx
 
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  CircleMarker,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import axios from "axios";
 
-// 1. Extend City here to match the actual JSON (including warning_level)
+// Extend City to match the JSON (including warning_level and population)
 interface City {
   id: number;
   city: string;
@@ -13,11 +20,77 @@ interface City {
   latitude: number;
   longitude: number;
   warning_level: "green" | "orange" | "red";
+  population: number | null;
 }
 
 interface MapPanelProps {
   onCityClick: (cityId: number) => void;
 }
+
+const Legend: React.FC = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const legendControl = (L.control as any)({ position: "topright" });
+    legendControl.onAdd = () => {
+      const div = L.DomUtil.create("div", "info legend");
+      div.style.backgroundColor = "lightgray";
+      div.style.fontWeight = "bold";
+      div.style.color = "black";
+      div.style.padding = "6px 8px";
+      div.style.borderRadius = "4px";
+      L.DomEvent.disableClickPropagation(div);
+      div.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+          <span
+            style="
+              display: inline-block;
+              width: 12px;
+              height: 12px;
+              background-color: green;
+              border-radius: 50%;
+              margin-right: 6px;
+            "
+          ></span>
+          Low Level
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 4px;">
+          <span
+            style="
+              display: inline-block;
+              width: 12px;
+              height: 12px;
+              background-color: orange;
+              border-radius: 50%;
+              margin-right: 6px;
+            "
+          ></span>
+          Medium Level
+        </div>
+        <div style="display: flex; align-items: center;">
+          <span
+            style="
+              display: inline-block;
+              width: 12px;
+              height: 12px;
+              background-color: red;
+              border-radius: 50%;
+              margin-right: 6px;
+            "
+          ></span>
+          High Level
+        </div>
+      `;
+      return div;
+    };
+    legendControl.addTo(map);
+    return () => {
+      map.removeControl(legendControl);
+    };
+  }, [map]);
+
+  return null;
+};
 
 function MapPanel({ onCityClick }: MapPanelProps) {
   const [cities, setCities] = useState<City[]>([]);
@@ -26,8 +99,6 @@ function MapPanel({ onCityClick }: MapPanelProps) {
   useEffect(() => {
     const fetchCities = () => {
       axios
-        // 2. Even though Body.tsx’s City type doesn’t mention warning_level,
-        //    this GET still returns warning_level in its JSON.
         .get<City[]>("http://127.0.0.1:8000/api/cities/")
         .then((res) => {
           setCities(res.data);
@@ -38,17 +109,16 @@ function MapPanel({ onCityClick }: MapPanelProps) {
           setError("⚠️ Unable to fetch city list.");
         });
     };
-
     fetchCities();
-    const interval = setInterval(fetchCities, 60 * 1000);
-    return () => clearInterval(interval);
+    const intervalId = setInterval(fetchCities, 60 * 1000);
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <div className="w-100 h-100 border border-primary border-2 rounded position-relative">
       <MapContainer
         center={[0, 20]}
-        zoom={3}
+        zoom={4}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer
@@ -56,15 +126,15 @@ function MapPanel({ onCityClick }: MapPanelProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
+        <Legend />
+
         {cities.map((city) => {
-          // 3. Decide circle color based on warning_level
           const fillColor = city.warning_level;
           return (
             <CircleMarker
               key={city.id}
               center={[city.latitude, city.longitude]}
-              radius={6}
-              // use pathOptions so both border and fill match warning_level
+              radius={4}
               pathOptions={{
                 color: fillColor,
                 fillColor: fillColor,
@@ -78,8 +148,11 @@ function MapPanel({ onCityClick }: MapPanelProps) {
               }}
             >
               <Tooltip>
-                {city.city}, {city.country} —{" "}
-                {city.warning_level.toUpperCase()}
+                <div>
+                  {city.city} [{city.country}]
+                  <br />
+                  Population: {city.population ?? "N/A"}
+                </div>
               </Tooltip>
             </CircleMarker>
           );
