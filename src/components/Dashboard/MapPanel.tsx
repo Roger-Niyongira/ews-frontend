@@ -4,7 +4,7 @@ import {
   TileLayer,
   GeoJSON,
   CircleMarker,
-  Tooltip,
+  Tooltip, 
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
@@ -128,77 +128,67 @@ const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
 
         <Legend />
 
-        {/**
-          A) Draw each watershed as a GeoJSON layer
-        */}
         {watersheds.map((ws) => {
-          // Build a GeoJSON Feature<MultiPolygon> object:
           const feature: Feature<MultiPolygon> = {
             type: "Feature",
             geometry: ws.geom as MultiPolygon,
             properties: {
               name: ws.name,
-              warning_level: ws.warning_level, // pass this into GeoJSON “properties”
+              warning_level: ws.warning_level,
             },
           };
 
           return (
             <GeoJSON
-  key={ws.id}
-  data={feature}
-  style={(feature) => {
-    // 1) Guard against “feature” being undefined.
-    //    If it is undefined, return a fallback style immediately.
-    if (!feature || !feature.properties) {
-      return {
-        fillColor:   "#CCCCCC", // fallback color
-        color:       "#666666",
-        weight:        1,
-        fillOpacity:  0.2,
-      };
-    }
+              key={ws.id}
+              data={feature}
+              style={(feature) => {
+                if (!feature || !feature.properties) {
+                  return {
+                    fillColor: "#CCCCCC", // fallback color
+                    color: "#666666",
+                    weight: 1,
+                    fillOpacity: 0.2,
+                  };
+                }
 
-    // 2) Now that TypeScript knows “feature” is not undefined,
-    //    we can safely read properties.warning_level:
-    const props = feature.properties as any;
-    const lvl  = props.warning_level as "green" | "orange" | "red";
+                const props = feature.properties as any;
+                const lvl = props.warning_level as "green" | "orange" | "red";
 
-    let fill: string;
-    if (lvl === "red") {
-      fill = "#E74C3C";
-    } else if (lvl === "orange") {
-      fill = "#F39C12";
-    } else {
-      fill = "#27AE60";
-    }
+                let fill: string;
+                if (lvl === "red") {
+                  fill = "#E74C3C";
+                } else if (lvl === "orange") {
+                  fill = "#F39C12";
+                } else {
+                  fill = "#27AE60";
+                }
 
-    return {
-      fillColor:   fill,
-      color:       fill,
-      weight:      1,
-      fillOpacity: 0.4,
-    };
-  }}
-  onEachFeature={(feature, layer) => {
-    if (feature.properties && (feature.properties as any).name) {
-      layer.bindTooltip((feature.properties as any).name, { sticky: true });
-    }
-  }}
-/>
+                return {
+                  fillColor: fill,
+                  color: fill,
+                  weight: 1,
+                  fillOpacity: 0.4,
+                };
+              }}
+              onEachFeature={(feature, layer) => {
+                if (feature.properties && (feature.properties as any).name) {
+                  layer.bindTooltip((feature.properties as any).name, {
+                    sticky: true,
+                  });
+                }
+              }}
+            />
           );
         })}
 
-        {/**
-          B) Draw each city as a CircleMarker, flipping [lon, lat] → [lat, lon]
-        */}
         {cities.map((city) => {
-          // Unpack [lon, lat] from city.location
           const [lon, lat] = city.location;
 
           return (
             <CircleMarker
               key={city.id}
-              center={[lat, lon]} // <-- flip to Leaflet’s [lat, lon]
+              center={[lat, lon]}
               radius={5}
               pathOptions={{
                 color: city.warning_level,

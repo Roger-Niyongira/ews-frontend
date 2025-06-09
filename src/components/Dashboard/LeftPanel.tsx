@@ -25,8 +25,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       >
         <h4 className="hydro-title fw-bold">
           {cityName && cityCountry
-            ? `7-Day Precipitation Forecast for ${cityName}, ${cityCountry}`
-            : "7-Day Precipitation Forecast"}
+            ? `10-Day Precipitation for ${cityName}, ${cityCountry}`
+            : "10-Day Precipitation"}
         </h4>
         {error && (
           <p className="text-danger" style={{ fontSize: 16 }}>
