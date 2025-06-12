@@ -38,9 +38,6 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
             Click on a map marker to load forecast.
           </p>
         )}
-        {cityId && !error && forecastData.length === 0 && (
-          <p style={{ fontSize: 16, opacity: 0.6 }}>Loading forecast…</p>
-        )}
         {forecastData.length > 0 && <ForecastChart data={forecastData} />}
       </div>
       <div

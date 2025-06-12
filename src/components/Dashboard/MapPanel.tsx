@@ -96,7 +96,7 @@ const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
         });
     };
     fetchCities();
-    const intervalId = setInterval(fetchCities, 60 * 1000);
+    const intervalId = setInterval(fetchCities, 30 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, []);
 
