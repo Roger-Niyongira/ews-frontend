@@ -6,6 +6,7 @@ import type { City } from "./MapPanel";
 import SwatMap from "./SwatMap";
 import { ForecastRecord } from "./ForecastChart";
 import type { ViewMode } from "../../App";
+import { motion } from "framer-motion";
 
 interface BodyProps {
   mode: ViewMode;
@@ -14,19 +15,15 @@ interface BodyProps {
 const Body: React.FC<BodyProps> = ({ mode }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(
-    null
-  );
-  const [selectedCityCountry, setSelectedCityCountry] = useState<
-    string | null
-  >(null);
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
+  const [selectedCityCountry, setSelectedCityCountry] = useState<string | null>(null);
   const [forecastData, setForecastData] = useState<ForecastRecord[]>([]);
   const [forecastError, setForecastError] = useState<string | null>(null);
 
   useEffect(() => {
     axios
       .get<City[]>("http://127.0.0.1:8000/api/cities/")
-      .then((res) => setCities(res.data))
+      .then(res => setCities(res.data))
       .catch(() => setCities([]));
   }, []);
 
@@ -34,23 +31,23 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
     setSelectedCityId(cityId);
     setForecastData([]);
     setForecastError(null);
-
-    const city = cities.find((c) => c.id === cityId);
+    const city = cities.find(c => c.id === cityId);
     setSelectedCityName(city?.city ?? null);
     setSelectedCityCountry(city?.country ?? null);
-
     axios
-      .get<ForecastRecord[]>(
-        `http://127.0.0.1:8000/api/cities/${cityId}/forecast/`
-      )
-      .then((res) => setForecastData(res.data))
+      .get<ForecastRecord[]>(`http://127.0.0.1:8000/api/cities/${cityId}/forecast/`)
+      .then(res => setForecastData(res.data))
       .catch(() => setForecastError("Unable to load forecast data."));
   };
 
   return (
     <div className="container-fluid h-100 p-2">
       <div className="row h-100 gx-2">
-        <div className="d-none d-lg-flex col-lg-4 flex-column h-100">
+        <motion.div
+          layout
+          transition={{ duration: 0.3 }}
+          className="d-none d-lg-flex col-lg-4 flex-column h-100"
+        >
           <LeftPanel
             mode={mode}
             cities={cities}
@@ -61,14 +58,18 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
             error={forecastError}
             onCityClick={handleCityClick}
           />
-        </div>
-        <div className="col-12 col-lg-8 d-flex flex-column h-100">
+        </motion.div>
+        <motion.div
+          layout
+          transition={{ duration: 0.3 }}
+          className="col-12 col-lg-8 d-flex flex-column h-100"
+        >
           {mode === "swat" ? (
             <SwatMap />
           ) : (
             <MapPanel cities={cities} onCityClick={handleCityClick} />
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
