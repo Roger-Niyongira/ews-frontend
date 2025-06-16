@@ -36,11 +36,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           ? `10-Day Precipitation for ${cityName}, ${cityCountry}`
           : "10-Day Precipitation"}
       </h4>
-      {error && (
-        <p className="text-danger" style={{ fontSize: 16 }}>
-          {error}
-        </p>
-      )}
+      {error && <p className="text-danger" style={{ fontSize: 16 }}>{error}</p>}
       {!cityId && !error && (
         <p style={{ fontSize: 16, opacity: 0.6 }}>
           Click on a map marker to load forecast.
@@ -60,7 +56,7 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           style={{ width: "100%", height: "100%" }}
         />
       ) : (
-        <SwatMap />
+        <SwatMap small style={{ width: "100%", height: "100%" }} />
       )}
     </div>
   </div>
