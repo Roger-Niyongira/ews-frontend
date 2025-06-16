@@ -55,11 +55,11 @@ const AboutPage = () => {
           <div className="mt-4">
             <h2 className="text-primary">About the Project</h2>
             <p>
-              Natural disasters such as floods, droughts, and hurricanes are
+              Natural hazards such as floods, droughts, and hurricanes are
               becoming increasingly frequent and intense due to climate change.
-              These disasters cause devastating impacts on lives,
+              These hazards cause devastating impacts on lives,
               infrastructure, and economies, especially in developing countries
-              and marginalized communities. Our goal is to reduce disaster risks
+              and communities, thus resulting in natural disasters. Our goal is to reduce disaster risks
               with an effective <strong>Early Warning System (EWS)</strong>,
               designed based on the United Nations'{" "}
               <a
