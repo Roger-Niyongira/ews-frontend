@@ -3,13 +3,21 @@ import React, { useState, useEffect } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import ScenarioPanel from "./ScenarioPanel";
 import NotesPanel from "./NotesPanel";
+import type { ViewMode } from "../../App";
 
 interface TopButtonsProps {
   darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
+  setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+  mode: ViewMode;
+  setMode: React.Dispatch<React.SetStateAction<ViewMode>>;
 }
 
-const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
+const TopButtons: React.FC<TopButtonsProps> = ({
+  darkMode,
+  setDarkMode,
+  mode,
+  setMode,
+}) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [location, setLocation] = useState("Loading...");
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
@@ -22,29 +30,14 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-
     fetch("https://geolocation-db.com/json/")
       .then((res) => res.json())
-      .then((data) => {
-        setLocation(`${data.city} [${data.country_code}]`);
-      })
-      .catch(() => {
-        setLocation("Unknown [--]");
-      });
-
+      .then((data) => setLocation(`${data.city} [${data.country_code}]`))
+      .catch(() => setLocation("Unknown [--]"));
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const buttonStyle = { minWidth: "180px" };
-
-  const showSwatAlert = () => {
-    Swal.fire({
-      title: "NEW SWAT MODEL",
-      text: "SWAT EWS Model is being developed. More to come soon!",
-      icon: "info",
-      confirmButtonText: "OK"
-    })
-  }
 
   const renderButtons = () => (
     <>
@@ -66,9 +59,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
         >
           DISPLAY NOTES
         </button>
-        {showNotesPanel && (
-          <NotesPanel onClose={() => setShowNotesPanel(false)} />
-        )}
+        {showNotesPanel && <NotesPanel onClose={() => setShowNotesPanel(false)} />}
       </div>
       <div style={{ position: "relative" }}>
         <button
@@ -78,7 +69,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
         >
           SCENARIOS
         </button>
-
         {showScenarioPanel && (
           <ScenarioPanel
             onClose={() => setShowScenarioPanel(false)}
@@ -103,11 +93,21 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
         </Dropdown>
       </div>
       <div>
-        <button 
-        className="btn btn-success fw-bold w-100"
-         style={buttonStyle}
-         onClick={showSwatAlert}>
-          VIEW SWAT EWS
+        <button
+          className="btn btn-success fw-bold w-100"
+          style={buttonStyle}
+          onClick={() => setMode(mode === "swat" ? "precip" : "swat")}
+        >
+          {mode === "swat" ? "VIEW PRECIPITATIONS" : "VIEW SWAT EWS"}
+        </button>
+      </div>
+      <div>
+        <button
+          className="btn btn-dark fw-bold w-100"
+          style={buttonStyle}
+          onClick={() => setDarkMode((d) => !d)}
+        >
+          {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
         </button>
       </div>
     </>
@@ -127,7 +127,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
             <Dropdown.Menu>
               <Dropdown.Item>WARNING LEVEL: LOW</Dropdown.Item>
               <Dropdown.Item>LOCATION: {location}</Dropdown.Item>
-              <Dropdown.Item>DATE: 2025-05-14</Dropdown.Item>
+              <Dropdown.Item>DATE: {currentDate}</Dropdown.Item>
               <Dropdown.Item>DISPLAY NOTES</Dropdown.Item>
               <Dropdown.Item>SCENARIOS</Dropdown.Item>
               <Dropdown.Item>FILTER SEARCH</Dropdown.Item>
@@ -136,15 +136,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({ darkMode, setDarkMode }) => {
         ) : (
           renderButtons()
         )}
-        <div>
-          <button
-            className="btn btn-dark fw-bold w-100"
-            style={buttonStyle}
-            onClick={() => setDarkMode(!darkMode)}
-          >
-            {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
-          </button>
-        </div>
       </div>
     </div>
   );

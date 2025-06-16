@@ -1,24 +1,22 @@
+// MapPanel.tsx
 import React, { useEffect, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   GeoJSON,
   CircleMarker,
-  Tooltip, 
+  Tooltip,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import axios from "axios";
-
-// Import the GeoJSON types:
 import type { Feature, MultiPolygon } from "geojson";
 
-interface City {
+export interface City {
   id: number;
   city: string;
   country: string;
-  location: [number, number]; // [ longitude, latitude ]
+  location: [number, number];    // [ longitude, latitude ]
   warning_level: "green" | "orange" | "red";
   population: number | null;
 }
@@ -28,104 +26,80 @@ interface WatershedFeature {
   name: string;
   warning_level: "green" | "orange" | "red";
   geom: {
-    // matches the serializer’s output
     type: "MultiPolygon";
-    coordinates: number[][][][]; // an array of polygon‐rings
+    coordinates: number[][][][];
   };
 }
 
 interface MapPanelProps {
+  cities: City[];
   onCityClick: (cityId: number) => void;
+  small?: boolean;
+  style?: React.CSSProperties;
 }
 
 const Legend: React.FC = () => {
   const map = useMap();
 
   useEffect(() => {
-    const legendControl = (L.control as any)({ position: "topright" });
-    legendControl.onAdd = () => {
+    const ctrl = (L.control as any)({ position: "topright" });
+    ctrl.onAdd = () => {
       const div = L.DomUtil.create("div", "info legend");
-      div.style.backgroundColor = "lightgray";
-      div.style.fontWeight = "bold";
-      div.style.color = "black";
-      div.style.padding = "6px 8px";
-      div.style.borderRadius = "4px";
+      div.style.cssText = `
+        background: lightgray;
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+      `;
       L.DomEvent.disableClickPropagation(div);
       div.innerHTML = `
-        <div style="display: flex; align-items: center; margin-bottom: 4px;">
-          <span style="display:inline-block;width:12px;height:12px;background-color:green;border-radius:50%;margin-right:6px;"></span>Low Level
-        </div>
-        <div style="display: flex; align-items: center; margin-bottom: 4px;">
-          <span style="display:inline-block;width:12px;height:12px;background-color:orange;border-radius:50%;margin-right:6px;"></span>Medium Level
-        </div>
-        <div style="display: flex; align-items: center;">
-          <span style="display:inline-block;width:12px;height:12px;background-color:red;border-radius:50%;margin-right:6px;"></span>High Level
-        </div>
+        <div><span style="background:green;width:12px;height:12px;display:inline-block;margin-right:6px;border-radius:50%;"></span>Low</div>
+        <div><span style="background:orange;width:12px;height:12px;display:inline-block;margin-right:6px;border-radius:50%;"></span>Med</div>
+        <div><span style="background:red;width:12px;height:12px;display:inline-block;margin-right:6px;border-radius:50%;"></span>High</div>
       `;
       return div;
     };
-    legendControl.addTo(map);
+
+    ctrl.addTo(map);
+
     return () => {
-      map.removeControl(legendControl);
+      map.removeControl(ctrl);
     };
   }, [map]);
 
   return null;
 };
 
-const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
-  const [cities, setCities] = useState<City[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  // State for watershed polygons
+const MapPanel: React.FC<MapPanelProps> = ({
+  cities,
+  onCityClick,
+  small = false,
+  style,
+}) => {
   const [watersheds, setWatersheds] = useState<WatershedFeature[]>([]);
   const [wsError, setWsError] = useState<string | null>(null);
 
-  // Fetch cities
   useEffect(() => {
-    const fetchCities = () => {
-      axios
-        .get<City[]>("http://127.0.0.1:8000/api/cities/")
-        .then((res) => {
-          setCities(res.data);
-          setError(null);
-        })
-        .catch(() => {
-          setCities([]);
-          setError("⚠️ Unable to fetch city list.");
-        });
-    };
-    fetchCities();
-    const intervalId = setInterval(fetchCities, 30 * 60 * 1000);
-    return () => clearInterval(intervalId);
+    fetch("http://127.0.0.1:8000/api/watersheds/")
+      .then((r) => r.json())
+      .then(setWatersheds)
+      .catch(() => setWsError("⚠️ Unable to fetch watershed polygons."));
   }, []);
 
-  // Fetch watersheds once
-  useEffect(() => {
-    axios
-      .get<WatershedFeature[]>("http://127.0.0.1:8000/api/watersheds/")
-      .then((res) => {
-        setWatersheds(res.data);
-        setWsError(null);
-      })
-      .catch(() => {
-        setWatersheds([]);
-        setWsError("⚠️ Unable to fetch watershed polygons.");
-      });
-  }, []);
+  const center: [number, number] = small ? [2, 20] : [0, 20];
+  const zoom = small ? 3 : 4;
 
   return (
-    <div className="w-100 h-100 border border-primary border-2 rounded position-relative">
+    <div className="w-100 h-100 position-relative">
       <MapContainer
-        center={[0, 20]}
-        zoom={4}
-        style={{ height: "100%", width: "100%" }}
+        center={center}
+        zoom={zoom}
+        style={style ?? { width: "100%", height: "100%" }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
         <Legend />
 
         {watersheds.map((ws) => {
@@ -137,45 +111,38 @@ const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
               warning_level: ws.warning_level,
             },
           };
-
           return (
             <GeoJSON
               key={ws.id}
               data={feature}
-              style={(feature) => {
-                if (!feature || !feature.properties) {
+              style={(f) => {
+                // guard against undefined
+                if (!f || !f.properties) {
                   return {
-                    fillColor: "#CCCCCC", // fallback color
+                    fillColor: "#CCCCCC",
                     color: "#666666",
                     weight: 1,
                     fillOpacity: 0.2,
                   };
                 }
-
-                const props = feature.properties as any;
-                const lvl = props.warning_level as "green" | "orange" | "red";
-
-                let fill: string;
-                if (lvl === "red") {
-                  fill = "#E74C3C";
-                } else if (lvl === "orange") {
-                  fill = "#F39C12";
-                } else {
-                  fill = "#27AE60";
-                }
-
+                const lvl = (f.properties as any)
+                  .warning_level as "green" | "orange" | "red";
+                const colors = {
+                  green: "#27AE60",
+                  orange: "#F39C12",
+                  red: "#E74C3C",
+                };
                 return {
-                  fillColor: fill,
-                  color: fill,
+                  fillColor: colors[lvl],
+                  color: colors[lvl],
                   weight: 1,
                   fillOpacity: 0.4,
                 };
               }}
-              onEachFeature={(feature, layer) => {
-                if (feature.properties && (feature.properties as any).name) {
-                  layer.bindTooltip((feature.properties as any).name, {
-                    sticky: true,
-                  });
+              onEachFeature={(f, layer) => {
+                const name = (f.properties as any)?.name;
+                if (name) {
+                  layer.bindTooltip(name, { sticky: true });
                 }
               }}
             />
@@ -184,7 +151,6 @@ const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
 
         {cities.map((city) => {
           const [lon, lat] = city.location;
-
           return (
             <CircleMarker
               key={city.id}
@@ -192,7 +158,6 @@ const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
               radius={5}
               pathOptions={{
                 color: city.warning_level,
-                fillColor: city.warning_level,
                 fillOpacity: 0.6,
                 stroke: false,
               }}
@@ -200,30 +165,20 @@ const MapPanel: React.FC<MapPanelProps> = ({ onCityClick }) => {
                 click: () => onCityClick(city.id),
               }}
             >
-              <Tooltip>
-                <div>
-                  {city.city} [{city.country}]
-                  <br />
-                  Population: {city.population ?? "N/A"}
-                </div>
+              <Tooltip direction="top" offset={[0, -5]}>
+                {city.city} [{city.country}]
+                <br />
+                Pop: {city.population ?? "N/A"}
               </Tooltip>
             </CircleMarker>
           );
         })}
       </MapContainer>
 
-      {error && (
-        <div
-          className="position-absolute top-0 start-50 translate-middle-x text-warning bg-dark px-3 py-2 rounded"
-          style={{ zIndex: 1000, marginTop: "10px" }}
-        >
-          {error}
-        </div>
-      )}
       {wsError && (
         <div
           className="position-absolute top-0 start-50 translate-middle-x text-danger bg-light px-3 py-2 rounded"
-          style={{ zIndex: 1000, marginTop: "50px" }}
+          style={{ zIndex: 1000, marginTop: "10px" }}
         >
           {wsError}
         </div>

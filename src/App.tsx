@@ -7,11 +7,13 @@ import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
 import "./App.css";
 
+export type ViewMode = "windy" | "precip" | "swat";
+
 function App() {
   const [showInstruction, setShowInstruction] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [mode, setMode] = useState<ViewMode>("windy");
   const location = useLocation();
-
   const isDashboard = location.pathname === "/dashboard";
 
   useEffect(() => {
@@ -31,7 +33,6 @@ function App() {
   return (
     <div className="d-flex flex-column vh-100">
       <Navbar onInstructionClick={() => setShowInstruction(true)} />
-
       <div
         className={
           isDashboard && darkMode
@@ -40,20 +41,21 @@ function App() {
         }
       >
         {isDashboard && (
-          <TopButtons darkMode={darkMode} setDarkMode={setDarkMode} />
+          <TopButtons
+            darkMode={darkMode}
+            setDarkMode={setDarkMode}
+            mode={mode}
+            setMode={setMode}
+          />
         )}
-
         <div className="flex-grow-1 d-flex overflow-hidden position-relative">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/"          element={<Body />} />
-            <Route path="/dashboard" element={<Body />} />
+            <Route path="/dashboard" element={<Body mode={mode} />} />
             <Route path="/about" element={<AboutPage />} />
-            {/* Add /preference here if needed */}
           </Routes>
         </div>
       </div>
-
       {showInstruction && (
         <InstructionPanel onClose={() => setShowInstruction(false)} />
       )}

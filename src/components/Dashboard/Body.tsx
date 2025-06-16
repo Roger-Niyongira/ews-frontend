@@ -2,21 +2,24 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import LeftPanel from "./LeftPanel";
 import MapPanel from "./MapPanel";
+import type { City } from "./MapPanel";
+import SwatMap from "./SwatMap";
 import { ForecastRecord } from "./ForecastChart";
+import type { ViewMode } from "../../App";
 
-interface City {
-  id: number;
-  city: string;
-  country: string;
-  latitude: number;
-  longitude: number;
+interface BodyProps {
+  mode: ViewMode;
 }
 
-const Body: React.FC = () => {
+const Body: React.FC<BodyProps> = ({ mode }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
-  const [selectedCityCountry, setSelectedCityCountry] = useState<string | null>(null);
+  const [selectedCityName, setSelectedCityName] = useState<string | null>(
+    null
+  );
+  const [selectedCityCountry, setSelectedCityCountry] = useState<
+    string | null
+  >(null);
   const [forecastData, setForecastData] = useState<ForecastRecord[]>([]);
   const [forecastError, setForecastError] = useState<string | null>(null);
 
@@ -33,24 +36,15 @@ const Body: React.FC = () => {
     setForecastError(null);
 
     const city = cities.find((c) => c.id === cityId);
-    if (city) {
-      setSelectedCityName(city.city);
-      setSelectedCityCountry(city.country);
-    } else {
-      setSelectedCityName(null);
-      setSelectedCityCountry(null);
-    }
+    setSelectedCityName(city?.city ?? null);
+    setSelectedCityCountry(city?.country ?? null);
 
     axios
-      .get<ForecastRecord[]>(`http://127.0.0.1:8000/api/cities/${cityId}/forecast/`)
-      .then((res) => {
-        setForecastData(res.data);
-        setForecastError(null);
-      })
-      .catch(() => {
-        setForecastData([]);
-        setForecastError("Unable to load forecast data.");
-      });
+      .get<ForecastRecord[]>(
+        `http://127.0.0.1:8000/api/cities/${cityId}/forecast/`
+      )
+      .then((res) => setForecastData(res.data))
+      .catch(() => setForecastError("Unable to load forecast data."));
   };
 
   return (
@@ -58,15 +52,22 @@ const Body: React.FC = () => {
       <div className="row h-100 gx-2">
         <div className="d-none d-lg-flex col-lg-4 flex-column h-100">
           <LeftPanel
+            mode={mode}
+            cities={cities}
             cityId={selectedCityId}
             cityName={selectedCityName}
             cityCountry={selectedCityCountry}
             forecastData={forecastData}
             error={forecastError}
+            onCityClick={handleCityClick}
           />
         </div>
         <div className="col-12 col-lg-8 d-flex flex-column h-100">
-          <MapPanel onCityClick={handleCityClick} />
+          {mode === "swat" ? (
+            <SwatMap />
+          ) : (
+            <MapPanel cities={cities} onCityClick={handleCityClick} />
+          )}
         </div>
       </div>
     </div>
