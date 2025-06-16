@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import LeftPanel from "./LeftPanel";
-import MapPanel from "./MapPanel";
-import type { City } from "./MapPanel";
+import MapPanel from "./PrecipMap";
+import type { City } from "./PrecipMap";
 import SwatMap from "./SwatMap";
 import { ForecastRecord } from "./ForecastChart";
 import type { ViewMode } from "../../App";
@@ -16,14 +16,16 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
-  const [selectedCityCountry, setSelectedCityCountry] = useState<string | null>(null);
+  const [selectedCityCountry, setSelectedCityCountry] = useState<string | null>(
+    null
+  );
   const [forecastData, setForecastData] = useState<ForecastRecord[]>([]);
   const [forecastError, setForecastError] = useState<string | null>(null);
 
   useEffect(() => {
     axios
       .get<City[]>("http://127.0.0.1:8000/api/cities/")
-      .then(res => setCities(res.data))
+      .then((res) => setCities(res.data))
       .catch(() => setCities([]));
   }, []);
 
@@ -31,12 +33,14 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
     setSelectedCityId(cityId);
     setForecastData([]);
     setForecastError(null);
-    const city = cities.find(c => c.id === cityId);
+    const city = cities.find((c) => c.id === cityId);
     setSelectedCityName(city?.city ?? null);
     setSelectedCityCountry(city?.country ?? null);
     axios
-      .get<ForecastRecord[]>(`http://127.0.0.1:8000/api/cities/${cityId}/forecast/`)
-      .then(res => setForecastData(res.data))
+      .get<ForecastRecord[]>(
+        `http://127.0.0.1:8000/api/cities/${cityId}/forecast/`
+      )
+      .then((res) => setForecastData(res.data))
       .catch(() => setForecastError("Unable to load forecast data."));
   };
 

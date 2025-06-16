@@ -1,7 +1,7 @@
 import React from "react";
 import ForecastChart, { ForecastRecord } from "./ForecastChart";
-import MapPanel from "./MapPanel";
-import type { City } from "./MapPanel";
+import MapPanel from "./PrecipMap";
+import type { City } from "./PrecipMap";
 import SwatMap from "./SwatMap";
 import type { ViewMode } from "../../App";
 
@@ -36,7 +36,11 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
           ? `10-Day Precipitation for ${cityName}, ${cityCountry}`
           : "10-Day Precipitation"}
       </h4>
-      {error && <p className="text-danger" style={{ fontSize: 16 }}>{error}</p>}
+      {error && (
+        <p className="text-danger" style={{ fontSize: 16 }}>
+          {error}
+        </p>
+      )}
       {!cityId && !error && (
         <p style={{ fontSize: 16, opacity: 0.6 }}>
           Click on a map marker to load forecast.
