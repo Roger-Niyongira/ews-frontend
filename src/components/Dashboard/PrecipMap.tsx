@@ -49,6 +49,7 @@ const Legend: React.FC = () => {
         padding: 6px 8px;
         border-radius: 4px;
         font-weight: bold;
+        color: black;
       `;
       L.DomEvent.disableClickPropagation(div);
       div.innerHTML = `
