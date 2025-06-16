@@ -96,6 +96,9 @@ const InstructionPanel: React.FC<InstructionPanelProps> = ({ onClose }) => {
           FILTER SEARCH: A way to filter by country, city, and watershed
         </li>
         <li className="mb-2">
+          VIEW SWAT EWS / VIEW PRECIPITATIONS: Toggle between SWAT Model (based on precipitations) and Precipitations. 
+        </li>
+        <li className="mb-2">
           MAP: Visually represent areas with correspinding risk levels. When a
           user clicks on a circle, its current and forecast is plotted in the
           top-left panel ("HYDROLOGICAL INFO") for visual inspection. You can

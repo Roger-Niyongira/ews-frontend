@@ -59,7 +59,9 @@ const TopButtons: React.FC<TopButtonsProps> = ({
         >
           DISPLAY NOTES
         </button>
-        {showNotesPanel && <NotesPanel onClose={() => setShowNotesPanel(false)} />}
+        {showNotesPanel && (
+          <NotesPanel onClose={() => setShowNotesPanel(false)} />
+        )}
       </div>
       <div style={{ position: "relative" }}>
         <button
@@ -125,12 +127,33 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               ☰ INFO
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item>WARNING LEVEL: LOW</Dropdown.Item>
-              <Dropdown.Item>LOCATION: {location}</Dropdown.Item>
-              <Dropdown.Item>DATE: {currentDate}</Dropdown.Item>
-              <Dropdown.Item>DISPLAY NOTES</Dropdown.Item>
-              <Dropdown.Item>SCENARIOS</Dropdown.Item>
-              <Dropdown.Item>FILTER SEARCH</Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                onClick={() => {
+                  setShowNotesPanel(true);
+                }}
+              >
+                DISPLAY NOTES
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                onClick={() => {
+                  setShowScenarioPanel(true);
+                }}
+              >
+                SCENARIOS
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                onClick={() => {
+                  setMode(mode === "swat" ? "precip" : "swat");
+                }}
+              >
+                {mode === "swat" ? "VIEW PRECIPITATIONS" : "VIEW SWAT EWS"}
+              </Dropdown.Item>
+              <Dropdown.Item as="button" onClick={() => setDarkMode((d) => !d)}>
+                {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
+              </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         ) : (

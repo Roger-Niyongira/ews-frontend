@@ -4,6 +4,7 @@ import type { Feature, MultiPolygon } from "geojson";
 
 interface WatershedFeature {
   id: number;
+  name: string;
   geom: {
     type: "MultiPolygon";
     coordinates: number[][][][];
@@ -29,25 +30,33 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
   const zoom = small ? 3 : 4;
 
   return (
-    <MapContainer center={center} zoom={zoom} style={style ?? { width: "100%", height: "100%" }}>
+    <MapContainer
+      center={center}
+      zoom={zoom}
+      style={style ?? { width: "100%", height: "100%" }}
+    >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
       />
+
       {watersheds.map((ws) => {
         const feature: Feature<MultiPolygon> = {
           type: "Feature",
           geometry: ws.geom as MultiPolygon,
-          properties: {},
+          properties: { name: ws.name },
         };
+
         return (
           <GeoJSON
             key={ws.id}
             data={feature}
-            style={{
-              color: "#8e44ad",
-              weight: 2,
-              fillOpacity: 0,
+            style={{ color: "#8e44ad", weight: 2, fillOpacity: 0 }}
+            onEachFeature={(feature, layer) => {
+              const name = (feature.properties as any)?.name;
+              if (name) {
+                layer.bindTooltip(name, { sticky: true });
+              }
             }}
           />
         );
