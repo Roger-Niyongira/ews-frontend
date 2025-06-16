@@ -7,12 +7,13 @@ import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
 import "./App.css";
 
-export type ViewMode = "windy" | "precip" | "swat";
+export type ViewMode = "precip" | "swat";
 
 function App() {
   const [showInstruction, setShowInstruction] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
-  const [mode, setMode] = useState<ViewMode>("windy");
+  //Adding the priority: precip or swat for big map display
+  const [mode, setMode] = useState<ViewMode>("precip");
   const location = useLocation();
   const isDashboard = location.pathname === "/dashboard";
 
