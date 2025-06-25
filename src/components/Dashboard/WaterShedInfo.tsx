@@ -84,7 +84,7 @@ const WatershedInfoPanel: React.FC<WatershedInfoPanelProps> = ({
           fontSize="12"
           fill="#333"
         >
-          Max Flow (m³/s)
+        Flow Out (m³/s)
         </text>
 
         <text x={140} y={175} textAnchor="middle" fontSize="12" fill="#333">

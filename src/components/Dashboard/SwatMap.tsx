@@ -8,7 +8,7 @@ interface WatershedFeature {
   name: string;
   geom: {
     type: "MultiPolygon";
-    coordinates: number[][][][]; // 
+    coordinates: number[][][][];
   };
 }
 
