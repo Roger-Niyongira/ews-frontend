@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import type { Feature, MultiPolygon, MultiLineString } from "geojson";
+import WatershedInfoPanel from "./WaterShedInfo";
 
 interface WatershedFeature {
   id: number;
   name: string;
   geom: {
     type: "MultiPolygon";
-    coordinates: number[][][][];
+    coordinates: number[][][][]; // 
   };
 }
 
@@ -18,7 +19,7 @@ interface RiverFeature {
   flo_out_max: number | null;
   geom: {
     type: "MultiLineString";
-    coordinates: number[][][];
+    coordinates: number[][][]; //
   };
   watershed: number;
 }
@@ -35,8 +36,10 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
   const [watersheds, setWatersheds] = useState<WatershedFeature[]>([]);
   const [rivers, setRivers] = useState<RiverFeature[]>([]);
   const [breaks, setBreaks] = useState<number[]>([]);
+  const [selectedWatershed, setSelectedWatershed] = useState<WatershedFeature | null>(null);
 
-  const colors = ["#ffffcc", "#c2e699", "#78c679", "#31a354", "#006837"];
+  //const colors = ["#ffffcc", "#c2e699", "#78c679", "#31a354", "#006837"];
+  const colors = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
 
   const getColor = (val: number | null): string => {
     if (val === null || breaks.length < 2) return "#cccccc";
@@ -118,6 +121,13 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
               onEachFeature={(feature, layer) => {
                 const name = (feature.properties as any)?.name;
                 if (name) layer.bindTooltip(name, { sticky: true });
+
+                layer.on({
+                  click: () => {
+                    const clicked = watersheds.find((w) => w.name === name);
+                    if (clicked) setSelectedWatershed(clicked);
+                  },
+                });
               }}
             />
           );
@@ -169,7 +179,7 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
           zIndex: 1000,
         }}
       >
-        <strong>Max Flow (m³/s)</strong>
+        <strong>Flow Out (m³/s)</strong>
         {breaks.length >= 2 &&
           colors.map((c, i) => (
             <div key={i}>
@@ -182,6 +192,14 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
           Data
         </div>
       </div>
+
+      {selectedWatershed && (
+        <WatershedInfoPanel
+          watershed={selectedWatershed}
+          rivers={rivers}
+          onClose={() => setSelectedWatershed(null)}
+        />
+      )}
     </div>
   );
 };

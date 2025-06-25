@@ -122,7 +122,8 @@ const MapPanel: React.FC<MapPanelProps> = ({
                     fillColor: "#CCCCCC",
                     color: "#666666",
                     weight: 1,
-                    fillOpacity: 0.2,
+                    fillOpacity: 0.1,
+                    interactive: false,
                   };
                 }
                 const lvl = (f.properties as any)
@@ -137,6 +138,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
                   color: colors[lvl],
                   weight: 1,
                   fillOpacity: 0.4,
+                  interactive: false,
                 };
               }}
               onEachFeature={(f, layer) => {
