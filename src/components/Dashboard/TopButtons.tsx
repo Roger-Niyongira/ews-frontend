@@ -19,7 +19,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   setMode,
 }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [location, setLocation] = useState("Loading...");
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
@@ -27,25 +26,10 @@ const TopButtons: React.FC<TopButtonsProps> = ({
     () => new Date().toISOString().split("T")[0]
   );
 
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    fetch("https://geolocation-db.com/json/")
-      .then((res) => res.json())
-      .then((data) => setLocation(`${data.city} [${data.country_code}]`))
-      .catch(() => setLocation("Unknown [--]"));
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   const buttonStyle = { minWidth: "180px" };
 
   const renderButtons = () => (
     <>
-      <div>
-        <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
-          LOCATION: {location}
-        </button>
-      </div>
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
           DATE: {currentDate}

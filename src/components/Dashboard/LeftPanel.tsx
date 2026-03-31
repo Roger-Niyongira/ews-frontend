@@ -43,25 +43,31 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
       )}
       {!cityId && !error && (
         <p style={{ fontSize: 16, opacity: 0.6 }}>
-          Click on a map marker to load forecast.
+          Click on a map marker to load precipitation forecast.
         </p>
       )}
       {forecastData.length > 0 && <ForecastChart data={forecastData} />}
     </div>
     <div
-      className="p-0 border border-primary border-2 rounded"
-      style={{ flex: "1 1 50%", maxHeight: "50%", overflow: "hidden" }}
+      className="pt-3 px-3 pb-1 border border-primary border-2 rounded d-flex flex-column"
+      style={{ flex: "1 1 50%", maxHeight: "50%", overflow: "auto" }}
     >
-      {mode === "swat" ? (
-        <MapPanel
-          cities={cities}
-          onCityClick={onCityClick}
-          small
-          style={{ width: "100%", height: "100%" }}
-        />
-      ) : (
-        <SwatMap small style={{ width: "100%", height: "100%" }} />
+      <h4 className="hydro-title fw-bold">
+        {cityName && cityCountry
+          ? `10-Day Streamflow for ${cityName}, ${cityCountry}`
+          : "10-Day Streamflow"}
+      </h4>
+      {error && (
+        <p className="text-danger" style={{ fontSize: 16 }}>
+          {error}
+        </p>
       )}
+      {!cityId && !error && (
+        <p style={{ fontSize: 16, opacity: 0.6 }}>
+          Click on a watershed or gauge to load streamflow data.
+        </p>
+      )}
+      {forecastData.length > 0 && <ForecastChart data={forecastData} />}
     </div>
   </div>
 );
