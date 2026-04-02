@@ -62,7 +62,7 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
     })
   }
 >
-  Preference
+  Settings
 </button>
         </li>
         <li className="nav-item">
@@ -75,9 +75,15 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
           </button>
         </li>
       </ul>
-
+      <Link
+        to="/login"
+        className="btn btn-link text-white fw-bold me-2 ms-auto"
+        style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
+      >
+        Login
+      </Link>
       <button
-        className="btn btn-link fw-bold d-flex align-items-center ms-auto"
+        className="btn btn-link fw-bold d-flex align-items-center"
         style={{
           color: "#f1c40f",
           marginRight: "20px",

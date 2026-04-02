@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import TopButtons from "./components/Dashboard/TopButtons";
 import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
+import LoginPage from "./components/LoginPage";
 import "./App.css";
 
 export type ViewMode = "precip" | "swat";
@@ -54,6 +55,8 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Body mode={mode} />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
       </div>
