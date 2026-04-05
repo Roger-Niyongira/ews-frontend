@@ -32,6 +32,8 @@ interface SwatMapProps {
 let cachedWatersheds: WatershedFeature[] | null = null;
 let cachedRivers: RiverFeature[] | null = null;
 
+const COLORS = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
+
 const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
   const [watersheds, setWatersheds] = useState<WatershedFeature[]>([]);
@@ -39,15 +41,12 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
   const [breaks, setBreaks] = useState<number[]>([]);
   const [selectedWatershed, setSelectedWatershed] = useState<WatershedFeature | null>(null);
 
-  //const colors = ["#ffffcc", "#c2e699", "#78c679", "#31a354", "#006837"];
-  const colors = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
-
   const getColor = (val: number | null): string => {
     if (val === null || breaks.length < 2) return "#cccccc";
     for (let i = 0; i < breaks.length - 1; i++) {
-      if (val >= breaks[i] && val <= breaks[i + 1]) return colors[i];
+      if (val >= breaks[i] && val <= breaks[i + 1]) return COLORS[i];
     }
-    return colors[colors.length - 1];
+    return COLORS[COLORS.length - 1];
   };
 
   const computeBreaks = React.useCallback((data: RiverFeature[]) => {
@@ -58,8 +57,8 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
 
   const min = Math.min(...valid);
   const max = Math.max(...valid);
-  const step = (max - min) / colors.length;
-  const b = Array.from({ length: colors.length + 1 }, (_, i) =>
+  const step = (max - min) / COLORS.length;
+  const b = Array.from({ length: COLORS.length + 1 }, (_, i) =>
     +(min + i * step).toFixed(2)
   );
   setBreaks(b);
@@ -182,7 +181,7 @@ useEffect(() => {
       >
         <strong>Flow Out (m³/s)</strong>
         {breaks.length >= 2 &&
-          colors.map((c, i) => (
+          COLORS.map((c, i) => (
             <div key={i}>
               <span style={{ background: c, padding: "0 10px" }}></span>{" "}
               {breaks[i]} - {breaks[i + 1]}

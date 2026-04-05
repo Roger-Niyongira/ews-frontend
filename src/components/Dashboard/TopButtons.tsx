@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import ScenarioPanel from "./ScenarioPanel";
 import NotesPanel from "./NotesPanel";
