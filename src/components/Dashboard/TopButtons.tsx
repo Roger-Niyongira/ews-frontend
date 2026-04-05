@@ -50,7 +50,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           style={buttonStyle}
           onClick={() => setShowScenarioPanel(!showScenarioPanel)}
         >
-          SCENARIOS
+          SCENARION
         </button>
         {showScenarioPanel && (
           <ScenarioPanel
