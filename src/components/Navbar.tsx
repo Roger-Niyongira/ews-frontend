@@ -4,9 +4,10 @@ import { Link } from "react-router-dom";
 
 interface NavbarProps {
   onInstructionClick: () => void;
+  onLoginClick: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
+const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => (
   <nav
     className="navbar navbar-expand-lg navbar-dark"
     style={{ backgroundColor: "#2196f3" }}
@@ -45,25 +46,25 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
         </li>
         <li className="nav-item">
           <button
-  className="nav-link text-white fw-bold btn btn-link"
-  style={{ textDecoration: "none" }}
-  onClick={() =>
-    Swal.fire({
-      icon: "info",
-      html: `
+            className="nav-link text-white fw-bold btn btn-link"
+            style={{ textDecoration: "none" }}
+            onClick={() =>
+              Swal.fire({
+                icon: "info",
+                html: `
         <p style="font-size: 14px;">This page is under development. See Preview Below:</p>
         <img 
           src="${process.env.PUBLIC_URL}/preference_mockup.png"
           alt="Preview"
           style="height: 260px; object-fit: contain; border-radius: 10px; margin-top: 10px;" />
       `,
-      confirmButtonText: "OK",
-      width: 400,
-    })
-  }
->
-  Settings
-</button>
+                confirmButtonText: "OK",
+                width: 400,
+              })
+            }
+          >
+            Settings
+          </button>
         </li>
         <li className="nav-item">
           <button
@@ -75,13 +76,13 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick }) => (
           </button>
         </li>
       </ul>
-      <Link
-        to="/login"
+      <button
         className="btn btn-link text-white fw-bold me-2 ms-auto"
         style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
+        onClick={onLoginClick}
       >
         Login
-      </Link>
+      </button>
       <button
         className="btn btn-link fw-bold d-flex align-items-center"
         style={{

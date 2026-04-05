@@ -21,10 +21,11 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
   );
   const [forecastData, setForecastData] = useState<ForecastRecord[]>([]);
   const [forecastError, setForecastError] = useState<string | null>(null);
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
   useEffect(() => {
     axios
-      .get<City[]>("http://127.0.0.1:8000/api/cities/")
+      .get<City[]>(`${API_BASE_URL}/api/cities/`)
       .then((res) => setCities(res.data))
       .catch(() => setCities([]));
   }, []);
@@ -38,7 +39,7 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
     setSelectedCityCountry(city?.country ?? null);
     axios
       .get<ForecastRecord[]>(
-        `http://127.0.0.1:8000/api/cities/${cityId}/forecast/`
+        `${API_BASE_URL}/api/cities/${cityId}/forecast/`
       )
       .then((res) => setForecastData(res.data))
       .catch(() => setForecastError("Unable to load forecast data."));

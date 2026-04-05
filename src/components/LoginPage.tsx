@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 
-const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState("");
+type Props = { onClose: () => void };
+
+const LoginPage: React.FC<Props> = ({ onClose }) => {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -13,7 +15,7 @@ const LoginPage: React.FC = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await res.json();
@@ -21,7 +23,7 @@ const LoginPage: React.FC = () => {
       if (res.ok) {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user_plan", data.plan);
-        window.location.href = "/dashboard";
+        onClose();
       } else {
         alert(data.error || "Login failed");
       }
@@ -31,35 +33,46 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="container mt-5" style={{ maxWidth: "400px" }}>
-      <h2 className="mb-4">Login</h2>
-      <form onSubmit={handleLogin}>
-        <div className="mb-3">
-          <input
-            type="email"
-            className="form-control"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+    <div
+      className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+      style={{ backgroundColor: "rgba(0,0,0,0.5)", zIndex: 2000 }}
+    >
+      <div className="bg-white p-4 rounded shadow" style={{ maxWidth: "400px", width: "100%" }}>
+        <div className="d-flex justify-content-between mb-3">
+          <h4>Login</h4>
+          <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>
+            X
+          </button>
         </div>
 
-        <div className="mb-3">
-          <input
-            type="password"
-            className="form-control"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <form onSubmit={handleLogin}>
+          <div className="mb-3">
+            <input
+              type="text"
+              className="form-control"   // ← add this
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Username"
+              required
+            />
+          </div>
 
-        <button type="submit" className="btn btn-primary w-100">
-          Sign in
-        </button>
-      </form>
+          <div className="mb-3">
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100">
+            Sign in
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

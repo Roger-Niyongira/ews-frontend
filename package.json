@@ -24,7 +24,7 @@
     "react-draggable": "^4.4.6",
     "react-helmet": "^6.1.0",
     "react-leaflet": "^5.0.0",
-    "react-router-dom": "^7.6.0",
+    "react-router-dom": "^6.30.3",
     "react-scripts": "5.0.1",
     "recharts": "^2.15.3",
     "sweetalert2": "^11.21.0",

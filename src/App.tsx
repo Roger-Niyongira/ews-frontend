@@ -12,6 +12,7 @@ export type ViewMode = "precip" | "swat";
 
 function App() {
   const [showInstruction, setShowInstruction] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   //Adding the priority: precip or swat for big map display
   const [mode, setMode] = useState<ViewMode>("precip");
@@ -34,7 +35,10 @@ function App() {
 
   return (
     <div className="d-flex flex-column vh-100">
-      <Navbar onInstructionClick={() => setShowInstruction(true)} />
+      <Navbar
+        onInstructionClick={() => setShowInstruction(true)}
+        onLoginClick={() => setShowLogin(true)}
+      />
       <div
         className={
           isDashboard && darkMode
@@ -55,13 +59,15 @@ function App() {
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Body mode={mode} />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
       </div>
       {showInstruction && (
         <InstructionPanel onClose={() => setShowInstruction(false)} />
+      )}
+      {showLogin && (
+        <LoginPage onClose={() => setShowLogin(false)} />
       )}
     </div>
   );

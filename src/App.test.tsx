@@ -1,9 +1,14 @@
+jest.mock('./components/Dashboard/Body', () => () => <div>Mock Body</div>);
+
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('renders app without crashing', () => {
+  render(
+    <MemoryRouter>
+      <App />
+    </MemoryRouter>
+  );
 });
