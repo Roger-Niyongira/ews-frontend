@@ -33,6 +33,7 @@ let cachedWatersheds: WatershedFeature[] | null = null;
 let cachedRivers: RiverFeature[] | null = null;
 
 const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
   const [watersheds, setWatersheds] = useState<WatershedFeature[]>([]);
   const [rivers, setRivers] = useState<RiverFeature[]>([]);
   const [breaks, setBreaks] = useState<number[]>([]);
@@ -49,48 +50,48 @@ const SwatMap: React.FC<SwatMapProps> = ({ small = false, style }) => {
     return colors[colors.length - 1];
   };
 
-  useEffect(() => {
-    if (cachedWatersheds) {
-      setWatersheds(cachedWatersheds);
-    } else {
-      fetch("http://127.0.0.1:8000/api/watersheds/")
-        .then((res) => res.json())
-        .then((data) => {
-          cachedWatersheds = data;
-          setWatersheds(data);
-        })
-        .catch(() => setWatersheds([]));
-    }
+  const computeBreaks = React.useCallback((data: RiverFeature[]) => {
+  const valid = data
+    .map((r) => r.flo_out_max)
+    .filter((v): v is number => v !== null);
+  if (valid.length < 2) return;
 
-    if (cachedRivers) {
-      setRivers(cachedRivers);
-      computeBreaks(cachedRivers);
-    } else {
-      fetch("http://127.0.0.1:8000/api/rivers/")
-        .then((res) => res.json())
-        .then((data) => {
-          cachedRivers = data;
-          setRivers(data);
-          computeBreaks(data);
-        })
-        .catch(() => setRivers([]));
-    }
-  }, []);
+  const min = Math.min(...valid);
+  const max = Math.max(...valid);
+  const step = (max - min) / colors.length;
+  const b = Array.from({ length: colors.length + 1 }, (_, i) =>
+    +(min + i * step).toFixed(2)
+  );
+  setBreaks(b);
+}, []);
 
-  const computeBreaks = (data: RiverFeature[]) => {
-    const valid = data
-      .map((r) => r.flo_out_max)
-      .filter((v): v is number => v !== null);
-    if (valid.length < 2) return;
+useEffect(() => {
+  if (cachedWatersheds) {
+    setWatersheds(cachedWatersheds);
+  } else {
+    fetch(`${API_BASE_URL}/api/watersheds/`)
+      .then((res) => res.json())
+      .then((data) => {
+        cachedWatersheds = data;
+        setWatersheds(data);
+      })
+      .catch(() => setWatersheds([]));
+  }
 
-    const min = Math.min(...valid);
-    const max = Math.max(...valid);
-    const step = (max - min) / colors.length;
-    const b = Array.from({ length: colors.length + 1 }, (_, i) =>
-      +(min + i * step).toFixed(2)
-    );
-    setBreaks(b);
-  };
+  if (cachedRivers) {
+    setRivers(cachedRivers);
+    computeBreaks(cachedRivers);
+  } else {
+    fetch(`${API_BASE_URL}/api/rivers/`)
+      .then((res) => res.json())
+      .then((data) => {
+        cachedRivers = data;
+        setRivers(data);
+        computeBreaks(data);
+      })
+      .catch(() => setRivers([]));
+  }
+}, [API_BASE_URL, computeBreaks]);
 
   const center: [number, number] = small ? [2, 20] : [0, 20];
   const zoom = small ? 3 : 4;

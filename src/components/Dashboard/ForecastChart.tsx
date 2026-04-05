@@ -36,8 +36,7 @@ const ForecastChart: React.FC<ForecastChartProps> = ({ data }) => {
           <XAxis
             dataKey="date"
             tickFormatter={(iso) => {
-              const [year, month, day] = iso.split("-").map(Number);
-              const d = new Date(Date.UTC(year, month - 1, day));
+              const [, month, day] = iso.split("-").map(Number);
               return `${month}/${day}`;
             }}
           />

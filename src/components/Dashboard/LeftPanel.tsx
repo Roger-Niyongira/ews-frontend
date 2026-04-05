@@ -1,8 +1,6 @@
 import React from "react";
 import ForecastChart, { ForecastRecord } from "./ForecastChart";
-import MapPanel from "./PrecipMap";
 import type { City } from "./PrecipMap";
-import SwatMap from "./SwatMap";
 import type { ViewMode } from "../../App";
 
 interface LeftPanelProps {

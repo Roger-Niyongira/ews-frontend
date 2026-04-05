@@ -1,4 +1,3 @@
-import Swal from "sweetalert2";
 import React, { useState, useEffect } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import ScenarioPanel from "./ScenarioPanel";
@@ -18,13 +17,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   mode,
   setMode,
 }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isMobile = window.innerWidth <= 768;
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
-  const [currentDate, setCurrentDate] = useState(
-    () => new Date().toISOString().split("T")[0]
-  );
+  const currentDate = new Date().toISOString().split("T")[0];
 
   const buttonStyle = { minWidth: "180px" };
 

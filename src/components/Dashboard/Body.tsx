@@ -28,7 +28,7 @@ const Body: React.FC<BodyProps> = ({ mode }) => {
       .get<City[]>(`${API_BASE_URL}/api/cities/`)
       .then((res) => setCities(res.data))
       .catch(() => setCities([]));
-  }, []);
+  }, [API_BASE_URL]);
 
   const handleCityClick = (cityId: number) => {
     setSelectedCityId(cityId);
