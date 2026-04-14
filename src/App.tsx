@@ -14,6 +14,7 @@ function App() {
   const [showInstruction, setShowInstruction] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
+  const [showClimateZones, setShowClimateZones] = useState(false);
   //Adding the priority: precip or swat for big map display
   const [mode, setMode] = useState<ViewMode>("precip");
   const location = useLocation();
@@ -52,12 +53,17 @@ function App() {
             setDarkMode={setDarkMode}
             mode={mode}
             setMode={setMode}
+            showClimateZones={showClimateZones}
+            setShowClimateZones={setShowClimateZones}
           />
         )}
         <div className="flex-grow-1 d-flex overflow-hidden position-relative">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<Body mode={mode} />} />
+            <Route
+              path="/dashboard"
+              element={<Body mode={mode} showClimateZones={showClimateZones} />}
+            />
             <Route path="/about" element={<AboutPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

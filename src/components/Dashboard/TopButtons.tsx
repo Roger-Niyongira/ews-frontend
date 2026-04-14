@@ -9,6 +9,8 @@ interface TopButtonsProps {
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   mode: ViewMode;
   setMode: React.Dispatch<React.SetStateAction<ViewMode>>;
+  showClimateZones: boolean;
+  setShowClimateZones: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const TopButtons: React.FC<TopButtonsProps> = ({
@@ -16,6 +18,8 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   setDarkMode,
   mode,
   setMode,
+  showClimateZones,
+  setShowClimateZones,
 }) => {
   const isMobile = window.innerWidth <= 768;
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
@@ -30,6 +34,16 @@ const TopButtons: React.FC<TopButtonsProps> = ({
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
           DATE: {currentDate}
+        </button>
+      </div>
+
+      <div>
+        <button
+          className="btn btn-info fw-bold w-100"
+          style={buttonStyle}
+          onClick={() => setShowClimateZones((v) => !v)}
+        >
+          {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
         </button>
       </div>
       <div style={{ position: "relative" }}>
@@ -50,7 +64,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           style={buttonStyle}
           onClick={() => setShowScenarioPanel(!showScenarioPanel)}
         >
-          SCENARION
+          SCENARIOS
         </button>
         {showScenarioPanel && (
           <ScenarioPanel
