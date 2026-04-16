@@ -14,10 +14,13 @@ export interface City {
   id: number;
   city: string;
   country: string;
-  location: [number, number];    // [ longitude, latitude ]
+  location: [number, number];
   warning_level: "green" | "orange" | "red";
   population: number | null;
+  climate_zone?: string | null;
 }
+
+type ThresholdsMap = Record<string, { green: number; orange: number }>;
 
 interface MapPanelProps {
   cities: City[];
@@ -68,12 +71,18 @@ const MapPanel: React.FC<MapPanelProps> = ({
   style,
 }) => {
   const [climateZones, setClimateZones] = useState<any>(null);
+  const [thresholds, setThresholds] = useState<ThresholdsMap>({});
 
   useEffect(() => {
     fetch(process.env.PUBLIC_URL + "/data/africa_climate_zones.geojson")
       .then((res) => res.json())
       .then((data) => setClimateZones(data))
       .catch(() => console.error("Failed to load climate zones"));
+
+    fetch("http://127.0.0.1:8000/api/climate-thresholds/")
+      .then((res) => res.json())
+      .then((data) => setThresholds(data))
+      .catch(() => console.error("Failed to load climate thresholds"));
   }, []);
 
   const center: [number, number] = small ? [2, 20] : [0, 20];
@@ -82,11 +91,13 @@ const MapPanel: React.FC<MapPanelProps> = ({
   const getClimateColor = (zone: string) => {
     switch (zone) {
       case "Tropical":
-        return "#4daf4a";   // green
+        return "#4daf4a";
       case "Temperate":
-        return "#377eb8";   // blue
+        return "#377eb8";
       case "Arid":
-        return "#e6ab02";   // yellow/orange
+        return "#e6ab02";
+      case "Semi-Arid":
+        return "#f781bf";
       default:
         return "#cccccc";
     }
@@ -118,7 +129,23 @@ const MapPanel: React.FC<MapPanelProps> = ({
             })}
             onEachFeature={(feature: any, layer) => {
               const zone = feature?.properties?.zone;
-              if (zone) {
+              const t = thresholds[zone];
+
+              if (!zone) return;
+
+              // If backend data exists → show thresholds
+              if (t) {
+                layer.bindTooltip(`
+                  <strong>${zone}</strong><br/>
+                  Green: &lt; ${t.green} mm<br/>
+                  Orange: ${t.green} - ${t.orange} mm<br/>
+                  Red: &ge; ${t.orange} mm
+                `, {
+                  sticky: true,
+                  direction: "top",
+                });
+              } else {
+                // If backend missing → show only zone name
                 layer.bindTooltip(zone, {
                   sticky: true,
                   direction: "top",
@@ -127,6 +154,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
             }}
           />
         )}
+
         {cities.map((city) => {
           const [lon, lat] = city.location;
           return (
@@ -152,7 +180,6 @@ const MapPanel: React.FC<MapPanelProps> = ({
           );
         })}
       </MapContainer>
-
     </div>
   );
 };

@@ -39,7 +39,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
 
       <div>
         <button
-          className="btn btn-info fw-bold w-100"
+          className={`btn ${showClimateZones ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
           onClick={() => setShowClimateZones((v) => !v)}
         >
