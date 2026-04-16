@@ -52,12 +52,12 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => 
               Swal.fire({
                 icon: "info",
                 html: `
-        <p style="font-size: 14px;">This page is under development. See Preview Below:</p>
-        <img 
-          src="${process.env.PUBLIC_URL}/preference_mockup.png"
-          alt="Preview"
-          style="height: 260px; object-fit: contain; border-radius: 10px; margin-top: 10px;" />
-      `,
+                  <p style="font-size: 14px;">This page is under development. See Preview Below:</p>
+                  <img 
+                    src="${process.env.PUBLIC_URL}/preference_mockup.png"
+                    alt="Preview"
+                    style="height: 260px; object-fit: contain; border-radius: 10px; margin-top: 10px;" />
+                `,
                 confirmButtonText: "OK",
                 width: 400,
               })
@@ -72,7 +72,16 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => 
             style={{ textDecoration: "none" }}
             onClick={onInstructionClick}
           >
-            Instruction
+            Help
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className="nav-link text-white fw-bold btn btn-link"
+            style={{ textDecoration: "none" }}
+            onClick={onInstructionClick}
+          >
+            Get in Touch
           </button>
         </li>
       </ul>
