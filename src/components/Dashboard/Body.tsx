@@ -30,6 +30,14 @@ const Body: React.FC<BodyProps> = ({ mode, showClimateZones  }) => {
       .catch(() => setCities([]));
   }, [API_BASE_URL]);
 
+  const [thresholds, setThresholds] = useState({});
+  useEffect(() => {
+    axios
+      .get(`${API_BASE_URL}/api/climate-thresholds/`)
+      .then(res => setThresholds(res.data))
+      .catch(() => setThresholds({}));
+  }, [API_BASE_URL]);
+
   const handleCityClick = (cityId: number) => {
     setSelectedCityId(cityId);
     setForecastData([]);
@@ -74,6 +82,7 @@ const Body: React.FC<BodyProps> = ({ mode, showClimateZones  }) => {
           ) : (
             <MapPanel
               cities={cities}
+              thresholds={thresholds}
               onCityClick={handleCityClick}
               showClimateZones={showClimateZones}
             />

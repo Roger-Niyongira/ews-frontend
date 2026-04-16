@@ -24,6 +24,7 @@ type ThresholdsMap = Record<string, { green: number; orange: number }>;
 
 interface MapPanelProps {
   cities: City[];
+  thresholds: ThresholdsMap;
   onCityClick: (cityId: number) => void;
   showClimateZones: boolean;
   small?: boolean;
@@ -65,24 +66,19 @@ const Legend: React.FC = () => {
 
 const MapPanel: React.FC<MapPanelProps> = ({
   cities,
+  thresholds,
   onCityClick,
   showClimateZones,
   small = false,
   style,
 }) => {
   const [climateZones, setClimateZones] = useState<any>(null);
-  const [thresholds, setThresholds] = useState<ThresholdsMap>({});
 
   useEffect(() => {
     fetch(process.env.PUBLIC_URL + "/data/africa_climate_zones.geojson")
       .then((res) => res.json())
       .then((data) => setClimateZones(data))
       .catch(() => console.error("Failed to load climate zones"));
-
-    fetch("http://127.0.0.1:8000/api/climate-thresholds/")
-      .then((res) => res.json())
-      .then((data) => setThresholds(data))
-      .catch(() => console.error("Failed to load climate thresholds"));
   }, []);
 
   const center: [number, number] = small ? [2, 20] : [0, 20];
