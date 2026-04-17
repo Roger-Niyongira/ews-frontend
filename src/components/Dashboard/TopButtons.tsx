@@ -4,6 +4,7 @@ import ScenarioPanel from "./ScenarioPanel";
 //import NotesPanel from "./NotesPanel";
 import type { ViewMode } from "../../App";
 
+
 interface TopButtonsProps {
   darkMode: boolean;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
@@ -11,6 +12,11 @@ interface TopButtonsProps {
   setMode: React.Dispatch<React.SetStateAction<ViewMode>>;
   showClimateZones: boolean;
   setShowClimateZones: React.Dispatch<React.SetStateAction<boolean>>;
+
+  showFloodMap: boolean;
+  setShowFloodMap: React.Dispatch<React.SetStateAction<boolean>>;
+  floodMapStatus: "public" | "private" | "none";
+  userCanAccessFloodMap: boolean;
 }
 
 const TopButtons: React.FC<TopButtonsProps> = ({
@@ -20,6 +26,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   setMode,
   showClimateZones,
   setShowClimateZones,
+
+  showFloodMap,
+  setShowFloodMap,
+  floodMapStatus,
+  userCanAccessFloodMap,
 }) => {
   const isMobile = window.innerWidth <= 768;
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
@@ -47,11 +58,23 @@ const TopButtons: React.FC<TopButtonsProps> = ({
       </div>
       <div>
         <button
-          className={`btn ${showClimateZones ? "btn-warning" : "btn-info"} fw-bold w-100`}
+          className={`btn ${showFloodMap ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
-          onClick={() => setShowClimateZones((v) => !v)}
+          onClick={() => {
+            if (floodMapStatus === "none") {
+              alert("Flood map not available yet. Please contact us for more information.");
+              return;
+            }
+
+            if (floodMapStatus === "private" && !userCanAccessFloodMap) {
+              alert("You do not have access to this flood map");
+              return;
+            }
+
+            setShowFloodMap((v) => !v);
+          }}
         >
-          {showClimateZones ? "HIDE HIDE FLOOD MAPS" : "SHOW FLOOD MAP"}
+          {showFloodMap ? "HIDE FLOOD MAP" : "SHOW FLOOD MAP"}
         </button>
       </div>
       <div style={{ position: "relative" }}>

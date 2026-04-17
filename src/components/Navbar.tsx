@@ -76,13 +76,9 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => 
           </button>
         </li>
         <li className="nav-item">
-          <button
-            className="nav-link text-white fw-bold btn btn-link"
-            style={{ textDecoration: "none" }}
-            onClick={onInstructionClick}
-          >
+          <Link className="nav-link text-white fw-bold" to="/contact">
             Get in Touch
-          </button>
+          </Link>
         </li>
       </ul>
       <button

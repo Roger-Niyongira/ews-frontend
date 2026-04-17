@@ -24,9 +24,10 @@ type ThresholdsMap = Record<string, { green: number; orange: number }>;
 
 interface MapPanelProps {
   cities: City[];
-  thresholds: ThresholdsMap;
+  thresholds: any;
   onCityClick: (cityId: number) => void;
   showClimateZones: boolean;
+  showFloodMap: boolean;
   small?: boolean;
   style?: React.CSSProperties;
 }
@@ -69,7 +70,8 @@ const MapPanel: React.FC<MapPanelProps> = ({
   thresholds,
   onCityClick,
   showClimateZones,
-  small = false,
+  showFloodMap,
+  small,
   style,
 }) => {
   const [climateZones, setClimateZones] = useState<any>(null);

@@ -6,6 +6,7 @@ import TopButtons from "./components/Dashboard/TopButtons";
 import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
 import LoginPage from "./components/LoginPage";
+import ContactPage from "./components/ContactPage";
 import "./App.css";
 
 export type ViewMode = "precip" | "swat";
@@ -15,14 +16,19 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [showClimateZones, setShowClimateZones] = useState(false);
-  //Adding the priority: precip or swat for big map display
   const [mode, setMode] = useState<ViewMode>("precip");
   const location = useLocation();
   const isDashboard = location.pathname === "/dashboard";
 
+  const [showFloodMap, setShowFloodMap] = useState(false);
+  const [floodMapStatus, setFloodMapStatus] = useState<"public" | "private" | "none">("none");
+  const [userCanAccessFloodMap, setUserCanAccessFloodMap] = useState(false);
+
   useEffect(() => {
     if (location.pathname === "/about") {
       document.title = "EWS | About";
+    } else if (location.pathname === "/contact") {
+      document.title = "EWS | Contact";
     } else if (location.pathname === "/preference") {
       document.title = "EWS | Preference";
     } else {
@@ -40,6 +46,7 @@ function App() {
         onInstructionClick={() => setShowInstruction(true)}
         onLoginClick={() => setShowLogin(true)}
       />
+
       <div
         className={
           isDashboard && darkMode
@@ -55,20 +62,33 @@ function App() {
             setMode={setMode}
             showClimateZones={showClimateZones}
             setShowClimateZones={setShowClimateZones}
+            showFloodMap={showFloodMap}
+            setShowFloodMap={setShowFloodMap}
+            floodMapStatus={floodMapStatus}
+            userCanAccessFloodMap={userCanAccessFloodMap}
           />
         )}
+
         <div className="flex-grow-1 d-flex overflow-hidden position-relative">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route
               path="/dashboard"
-              element={<Body mode={mode} showClimateZones={showClimateZones} />}
+              element={
+                <Body
+                  mode={mode}
+                  showClimateZones={showClimateZones}
+                  showFloodMap={showFloodMap}
+                />
+              }
             />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>
       </div>
+
       {showInstruction && (
         <InstructionPanel onClose={() => setShowInstruction(false)} />
       )}

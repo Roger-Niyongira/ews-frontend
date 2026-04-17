@@ -11,8 +11,9 @@ import { motion } from "framer-motion";
 interface BodyProps {
   mode: ViewMode;
   showClimateZones: boolean;
+  showFloodMap: boolean;
 }
-const Body: React.FC<BodyProps> = ({ mode, showClimateZones  }) => {
+const Body: React.FC<BodyProps> = ({ mode, showClimateZones, showFloodMap }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
@@ -85,6 +86,7 @@ const Body: React.FC<BodyProps> = ({ mode, showClimateZones  }) => {
               thresholds={thresholds}
               onCityClick={handleCityClick}
               showClimateZones={showClimateZones}
+              showFloodMap={showFloodMap}
             />
           )}
         </motion.div>
