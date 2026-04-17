@@ -72,7 +72,7 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => 
             style={{ textDecoration: "none" }}
             onClick={onInstructionClick}
           >
-            Help
+            Instructions
           </button>
         </li>
         <li className="nav-item">

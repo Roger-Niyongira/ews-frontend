@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import ScenarioPanel from "./ScenarioPanel";
-import NotesPanel from "./NotesPanel";
+//import NotesPanel from "./NotesPanel";
 import type { ViewMode } from "../../App";
 
 interface TopButtonsProps {
@@ -24,7 +24,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   const isMobile = window.innerWidth <= 768;
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
-  const [showNotesPanel, setShowNotesPanel] = useState(false);
+  //const [showNotesPanel, setShowNotesPanel] = useState(false);
 
   const buttonStyle = { minWidth: "180px" };
 
@@ -118,14 +118,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               ☰ INFO
             </Dropdown.Toggle>
             <Dropdown.Menu>
-              <Dropdown.Item
-                as="button"
-                onClick={() => {
-                  setShowNotesPanel(true);
-                }}
-              >
-                DISPLAY NOTES
-              </Dropdown.Item>
               <Dropdown.Item
                 as="button"
                 onClick={() => {
