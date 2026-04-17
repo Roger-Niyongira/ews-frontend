@@ -25,7 +25,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
   const [showNotesPanel, setShowNotesPanel] = useState(false);
-  const currentDate = new Date().toISOString().split("T")[0];
 
   const buttonStyle = { minWidth: "180px" };
 
@@ -33,7 +32,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
     <>
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
-          DATE: {currentDate}
+          LAST UPDATE: Loading...
         </button>
       </div>
 
@@ -46,17 +45,14 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
         </button>
       </div>
-      <div style={{ position: "relative" }}>
+      <div>
         <button
-          className="btn btn-info fw-bold w-100"
+          className={`btn ${showClimateZones ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
-          onClick={() => setShowNotesPanel(!showNotesPanel)}
+          onClick={() => setShowClimateZones((v) => !v)}
         >
-          DISPLAY NOTES
+          {showClimateZones ? "HIDE HIDE FLOOD MAPS" : "SHOW FLOOD MAP"}
         </button>
-        {showNotesPanel && (
-          <NotesPanel onClose={() => setShowNotesPanel(false)} />
-        )}
       </div>
       <div style={{ position: "relative" }}>
         <button
