@@ -21,8 +21,8 @@ function App() {
   const isDashboard = location.pathname === "/dashboard";
 
   const [showFloodMap, setShowFloodMap] = useState(false);
-  const [floodMapStatus, setFloodMapStatus] = useState<"public" | "private" | "none">("none");
-  const [userCanAccessFloodMap, setUserCanAccessFloodMap] = useState(false);
+  const [floodMapStatus] = useState<"public" | "private" | "none">("none");
+  const [userCanAccessFloodMap] = useState(false);
 
   useEffect(() => {
     if (location.pathname === "/about") {

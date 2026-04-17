@@ -20,7 +20,7 @@ export interface City {
   climate_zone?: string | null;
 }
 
-type ThresholdsMap = Record<string, { green: number; orange: number }>;
+//type ThresholdsMap = Record<string, { green: number; orange: number }>;
 
 interface MapPanelProps {
   cities: City[];
