@@ -37,7 +37,13 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
   //const [showNotesPanel, setShowNotesPanel] = useState(false);
 
-  const buttonStyle = { minWidth: "180px" };
+  const buttonStyle = {
+    minWidth: "150px",
+    padding: "0.35rem 0.75rem",
+    fontSize: "0.9rem",
+    lineHeight: "1.2",
+    whiteSpace: "nowrap" as const,
+  };
 
   const renderButtons = () => (
     <>
@@ -130,8 +136,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   );
 
   return (
-    <div className="container-fluid mt-3 mb-2">
-      <div className="row row-cols-auto g-2 justify-content-center flex-wrap">
+    <div className="container-fluid mt-3 mb-1">
+      <div
+        className="d-flex flex-nowrap gap-2 overflow-auto justify-content-lg-center pb-1"
+        style={{ WebkitOverflowScrolling: "touch" }}
+      >
         {isMobile ? (
           <Dropdown>
             <Dropdown.Toggle
