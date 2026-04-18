@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
 import ScenarioPanel from "./ScenarioPanel";
-//import NotesPanel from "./NotesPanel";
 import type { ViewMode } from "../../App";
 
 
@@ -36,7 +35,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
   const [scenarioPosition, setScenarioPosition] = useState({ x: 16, y: 96 });
-  //const [showNotesPanel, setShowNotesPanel] = useState(false);
 
   const buttonStyle = {
     minWidth: "150px",
@@ -143,7 +141,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   return (
     <div className="container-fluid mt-3 mb-1">
       <div
-        className="d-flex flex-nowrap gap-2 overflow-auto justify-content-lg-center pb-1"
+        className="d-flex flex-nowrap gap-2 overflow-auto overflow-lg-visible justify-content-lg-center pb-1"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {isMobile ? (
@@ -154,7 +152,38 @@ const TopButtons: React.FC<TopButtonsProps> = ({
             >
               ☰ INFO
             </Dropdown.Toggle>
-            <Dropdown.Menu>
+            <Dropdown.Menu
+              popperConfig={{ strategy: "fixed" }}
+              renderOnMount
+              style={{ zIndex: 1080 }}
+            >
+              <Dropdown.Item as="span" className="text-muted small">
+                LAST UPDATE: Loading...
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                onClick={() => setShowClimateZones((v) => !v)}
+              >
+                {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
+              </Dropdown.Item>
+              <Dropdown.Item
+                as="button"
+                onClick={() => {
+                  if (floodMapStatus === "none") {
+                    alert("Flood map not available yet. Please contact us for more information.");
+                    return;
+                  }
+
+                  if (floodMapStatus === "private" && !userCanAccessFloodMap) {
+                    alert("You do not have access to this flood map");
+                    return;
+                  }
+
+                  setShowFloodMap((v) => !v);
+                }}
+              >
+                {showFloodMap ? "HIDE FLOOD MAP" : "SHOW FLOOD MAP"}
+              </Dropdown.Item>
               <Dropdown.Item
                 as="button"
                 onClick={() => {
@@ -164,6 +193,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               >
                 SCENARIOS
               </Dropdown.Item>
+              <Dropdown.Item href="#">FILTER SEARCH</Dropdown.Item>
               <Dropdown.Item
                 as="button"
                 onClick={() => {

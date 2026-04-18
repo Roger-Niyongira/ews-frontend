@@ -49,7 +49,7 @@ const LoginPage: React.FC<Props> = ({ onClose }) => {
           <div className="mb-3">
             <input
               type="text"
-              className="form-control"   // ← add this
+              className="form-control"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
