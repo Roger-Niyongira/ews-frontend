@@ -137,11 +137,7 @@ const ContactPage = () => {
                     />
                   </div>
 
-                  <div className="col-12 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 pt-2">
-                    <p className="text-muted mb-0">
-                      We typically reply within 1 to 2 business days.
-                    </p>
-
+                  <div className="col-12 d-flex justify-content-center pt-2">
                     <button type="submit" className="btn btn-primary btn-lg px-4">
                       Send Message
                     </button>

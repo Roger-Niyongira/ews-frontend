@@ -4,19 +4,25 @@ interface ScenarioPanelProps {
   onClose: () => void;
   thresholds: { medium: number; high: number };
   setThresholds: (thresholds: { medium: number; high: number }) => void;
+  initialPosition: { x: number; y: number };
 }
 
 const ScenarioPanel: React.FC<ScenarioPanelProps> = ({
   onClose,
   thresholds,
   setThresholds,
+  initialPosition,
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState(initialPosition);
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [medium, setMedium] = useState(thresholds.medium);
   const [high, setHigh] = useState(thresholds.high);
+
+  useEffect(() => {
+    setPosition(initialPosition);
+  }, [initialPosition]);
 
   // Drag handlers
   const onMouseDown = (e: React.MouseEvent) => {
@@ -52,7 +58,7 @@ const ScenarioPanel: React.FC<ScenarioPanelProps> = ({
       ref={panelRef}
       onMouseDown={onMouseDown}
       style={{
-        position: "absolute",
+        position: "fixed",
         left: `${position.x}px`,
         top: `${position.y}px`,
         backgroundColor: "#4a4a4a",

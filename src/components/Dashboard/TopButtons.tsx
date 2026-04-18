@@ -35,6 +35,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   const isMobile = window.innerWidth <= 768;
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
+  const [scenarioPosition, setScenarioPosition] = useState({ x: 16, y: 96 });
   //const [showNotesPanel, setShowNotesPanel] = useState(false);
 
   const buttonStyle = {
@@ -83,21 +84,21 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           {showFloodMap ? "HIDE FLOOD MAP" : "SHOW FLOOD MAP"}
         </button>
       </div>
-      <div style={{ position: "relative" }}>
+      <div>
         <button
           className="btn btn-info fw-bold w-100"
           style={buttonStyle}
-          onClick={() => setShowScenarioPanel(!showScenarioPanel)}
+          onClick={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            setScenarioPosition({
+              x: Math.max(16, rect.left),
+              y: rect.bottom + 8,
+            });
+            setShowScenarioPanel((v) => !v);
+          }}
         >
           SCENARIOS
         </button>
-        {showScenarioPanel && (
-          <ScenarioPanel
-            onClose={() => setShowScenarioPanel(false)}
-            thresholds={thresholds}
-            setThresholds={setThresholds}
-          />
-        )}
       </div>
       <div>
         <Dropdown>
@@ -107,7 +108,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           >
             FILTER SEARCH
           </Dropdown.Toggle>
-          <Dropdown.Menu>
+          <Dropdown.Menu
+            renderOnMount
+            popperConfig={{ strategy: "fixed" }}
+            style={{ zIndex: 1080 }}
+          >
             <Dropdown.Item href="#">Watershed</Dropdown.Item>
             <Dropdown.Item href="#">Country</Dropdown.Item>
             <Dropdown.Item href="#">Model</Dropdown.Item>
@@ -153,6 +158,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               <Dropdown.Item
                 as="button"
                 onClick={() => {
+                  setScenarioPosition({ x: 16, y: 96 });
                   setShowScenarioPanel(true);
                 }}
               >
@@ -175,6 +181,14 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           renderButtons()
         )}
       </div>
+      {showScenarioPanel && (
+        <ScenarioPanel
+          onClose={() => setShowScenarioPanel(false)}
+          thresholds={thresholds}
+          setThresholds={setThresholds}
+          initialPosition={scenarioPosition}
+        />
+      )}
     </div>
   );
 };
