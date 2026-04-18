@@ -35,6 +35,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
   const [showScenarioPanel, setShowScenarioPanel] = useState(false);
   const [scenarioPosition, setScenarioPosition] = useState({ x: 16, y: 96 });
+  const [showInfoMenu, setShowInfoMenu] = useState(false);
 
   const buttonStyle = {
     minWidth: "150px",
@@ -145,10 +146,18 @@ const TopButtons: React.FC<TopButtonsProps> = ({
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {isMobile ? (
-          <Dropdown>
+          <Dropdown
+            show={showInfoMenu}
+            onToggle={(nextShow) => setShowInfoMenu(nextShow)}
+          >
             <Dropdown.Toggle
               className="btn btn-info fw-bold"
               style={buttonStyle}
+              onClick={() => setShowInfoMenu((open) => !open)}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                setShowInfoMenu((open) => !open);
+              }}
             >
               ☰ INFO
             </Dropdown.Toggle>
@@ -162,13 +171,17 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               </Dropdown.Item>
               <Dropdown.Item
                 as="button"
-                onClick={() => setShowClimateZones((v) => !v)}
+                onClick={() => {
+                  setShowInfoMenu(false);
+                  setShowClimateZones((v) => !v);
+                }}
               >
                 {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
               </Dropdown.Item>
               <Dropdown.Item
                 as="button"
                 onClick={() => {
+                  setShowInfoMenu(false);
                   if (floodMapStatus === "none") {
                     alert("Flood map not available yet. Please contact us for more information.");
                     return;
@@ -187,22 +200,35 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               <Dropdown.Item
                 as="button"
                 onClick={() => {
+                  setShowInfoMenu(false);
                   setScenarioPosition({ x: 16, y: 96 });
                   setShowScenarioPanel(true);
                 }}
               >
                 SCENARIOS
               </Dropdown.Item>
-              <Dropdown.Item href="#">FILTER SEARCH</Dropdown.Item>
+              <Dropdown.Item
+                href="#"
+                onClick={() => setShowInfoMenu(false)}
+              >
+                FILTER SEARCH
+              </Dropdown.Item>
               <Dropdown.Item
                 as="button"
                 onClick={() => {
+                  setShowInfoMenu(false);
                   setMode(mode === "swat" ? "precip" : "swat");
                 }}
               >
                 {mode === "swat" ? "VIEW PRECIPITATIONS" : "VIEW SWAT EWS"}
               </Dropdown.Item>
-              <Dropdown.Item as="button" onClick={() => setDarkMode((d) => !d)}>
+              <Dropdown.Item
+                as="button"
+                onClick={() => {
+                  setShowInfoMenu(false);
+                  setDarkMode((d) => !d);
+                }}
+              >
                 {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
               </Dropdown.Item>
             </Dropdown.Menu>
