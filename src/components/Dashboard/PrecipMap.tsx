@@ -38,6 +38,7 @@ interface MapPanelProps {
 interface WatershedFeatureSummary {
   key: string;
   name: string;
+  feature: GeoJSON.Feature | null;
 }
 
 const Legend: React.FC = () => {
@@ -87,6 +88,8 @@ const MapPanel: React.FC<MapPanelProps> = ({
   style,
 }) => {
   const [climateZones, setClimateZones] = useState<any>(null);
+  const [isProjectLayersCollapsed, setIsProjectLayersCollapsed] = useState(false);
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
   const availableWatersheds = projectWatersheds.filter((layer) => layer.geojsonData);
 
   const getWatershedFeatureSummary = (
@@ -129,11 +132,11 @@ const MapPanel: React.FC<MapPanelProps> = ({
   };
 
   const watershedFeatureSummaries: WatershedFeatureSummary[] = availableWatersheds.flatMap(
-    (layer) => {
+    (layer): WatershedFeatureSummary[] => {
       const geojson = layer.geojsonData;
 
       if (!geojson || geojson.type !== "FeatureCollection") {
-        return [{ key: `layer-${layer.id}`, name: layer.name }];
+        return [{ key: `layer-${layer.id}`, name: layer.name, feature: null }];
       }
 
       const featureCollection = geojson as GeoJSON.FeatureCollection;
@@ -147,6 +150,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
         return {
           key: `${layer.id}-${index}`,
           name,
+          feature,
         };
       });
     }
@@ -177,6 +181,22 @@ const MapPanel: React.FC<MapPanelProps> = ({
     }
   };
 
+  const handleWatershedSelect = (feature: GeoJSON.Feature | null) => {
+    if (!feature || !mapInstance) {
+      return;
+    }
+
+    const featureLayer = L.geoJSON(feature as GeoJSON.GeoJsonObject);
+    const bounds = featureLayer.getBounds();
+
+    if (bounds.isValid()) {
+      mapInstance.fitBounds(bounds, {
+        padding: [24, 24],
+        maxZoom: 10,
+      });
+    }
+  };
+
   return (
     <div className="w-100 h-100 position-relative">
       {projectName && (projectWatersheds.length > 0 || showFloodMap) && (
@@ -187,66 +207,85 @@ const MapPanel: React.FC<MapPanelProps> = ({
             bottom: 12,
             left: 12,
             zIndex: 1000,
-            width: 260,
-            maxHeight: 260,
-            overflowY: "auto",
+            width: "max-content",
+            minWidth: 300,
+            maxWidth: "min(440px, calc(100% - 24px))",
+            maxHeight: isProjectLayersCollapsed ? "none" : "min(70vh, calc(100% - 24px))",
+            overflowY: isProjectLayersCollapsed ? "visible" : "auto",
             padding: "0.9rem",
             backgroundColor: "#2f343a",
             color: "#f8f9fa",
           }}
         >
-          <div className="fw-bold mb-2">Project Layers</div>
-          <div className="small mb-3" style={{ color: "#c7ced6" }}>
-            {projectName}
+          <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
+            <div>
+              <div className="fw-bold">Project Layers</div>
+              <div className="small" style={{ color: "#c7ced6" }}>
+                {projectName}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-light"
+              onClick={() => setIsProjectLayersCollapsed((collapsed) => !collapsed)}
+            >
+              {isProjectLayersCollapsed ? "Expand" : "Collapse"}
+            </button>
           </div>
 
-          {projectWatersheds.length > 0 && (
-            <div className="mb-3">
-              <div className="fw-semibold mb-2">Watersheds</div>
-              <div className="list-group">
-                {availableWatersheds.length > 0
-                  ? watershedFeatureSummaries.map((feature) => (
-                      <div
-                        key={feature.key}
-                        className="list-group-item py-2 px-2"
-                        style={{
-                          backgroundColor: "#3a4047",
-                          color: "#f8f9fa",
-                          borderColor: "#4b535c",
-                        }}
-                      >
-                        <div>{feature.name}</div>
-                      </div>
-                    ))
-                  : projectWatersheds.map((layer) => (
-                      <div
-                        key={layer.id}
-                        className="list-group-item py-2 px-2"
-                        style={{
-                          backgroundColor: "#3a4047",
-                          color: "#f8f9fa",
-                          borderColor: "#4b535c",
-                        }}
-                      >
-                        <div>{layer.name}</div>
-                        {!layer.geojsonData && (
-                          <div className="small" style={{ color: "#ffb3b3" }}>
-                            Layer file found, but geometry could not be loaded yet.
+          {!isProjectLayersCollapsed && (
+            <>
+              {projectWatersheds.length > 0 && (
+                <div className="mb-3">
+                  <div className="fw-semibold mb-2">Watersheds</div>
+                  <div className="list-group">
+                    {availableWatersheds.length > 0
+                      ? watershedFeatureSummaries.map((feature) => (
+                          <div
+                            key={feature.key}
+                            className="list-group-item py-2 px-2"
+                            style={{
+                              backgroundColor: "#3a4047",
+                              color: "#f8f9fa",
+                              borderColor: "#4b535c",
+                              cursor: feature.feature ? "pointer" : "default",
+                            }}
+                            onClick={() => handleWatershedSelect(feature.feature)}
+                          >
+                            <div>{feature.name}</div>
                           </div>
-                        )}
-                      </div>
-                    ))}
-              </div>
-            </div>
-          )}
+                        ))
+                      : projectWatersheds.map((layer) => (
+                          <div
+                            key={layer.id}
+                            className="list-group-item py-2 px-2"
+                            style={{
+                              backgroundColor: "#3a4047",
+                              color: "#f8f9fa",
+                              borderColor: "#4b535c",
+                            }}
+                          >
+                            <div>{layer.name}</div>
+                            {!layer.geojsonData && (
+                              <div className="small" style={{ color: "#ffb3b3" }}>
+                                Layer file found, but geometry could not be loaded yet.
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                  </div>
+                </div>
+              )}
 
-          {showFloodMap && (
-            <div>
-              <div className="fw-semibold mb-2">Flood Maps</div>
-              <div className="small" style={{ color: "#c7ced6" }}>
-                Flood map items will appear here when project flood layers are connected.
-              </div>
-            </div>
+              {showFloodMap && (
+                <div>
+                  <div className="fw-semibold mb-2">Flood Maps</div>
+                  <div className="small" style={{ color: "#c7ced6" }}>
+                    Flood map items will appear here when project flood layers are connected.
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -256,6 +295,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
         zoom={zoom}
         style={style ?? { width: "100%", height: "100%" }}
       >
+        <MapReadyBridge onReady={setMapInstance} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -363,6 +403,16 @@ const MapPanel: React.FC<MapPanelProps> = ({
       </MapContainer>
     </div>
   );
+};
+
+const MapReadyBridge: React.FC<{ onReady: (map: L.Map) => void }> = ({ onReady }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    onReady(map);
+  }, [map, onReady]);
+
+  return null;
 };
 
 export default React.memo(MapPanel);
