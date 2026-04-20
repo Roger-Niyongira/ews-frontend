@@ -16,7 +16,7 @@ export interface City {
   city: string;
   country: string;
   location: [number, number];
-  warning_level: "green" | "orange" | "red";
+  warning_level: "green" | "orange" | "red" | "no_data";
   population: number | null;
   climate_zone?: string | null;
 }
@@ -344,6 +344,10 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
         {showPrecipitations &&
           cities.map((city) => {
+            if (city.warning_level === "no_data") {
+              return null;
+            }
+
             const [lon, lat] = city.location;
             return (
               <CircleMarker

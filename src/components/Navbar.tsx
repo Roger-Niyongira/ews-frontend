@@ -94,15 +94,19 @@ const Navbar: React.FC<NavbarProps> = ({
                 Instructions
               </button>
             </li>
-            <li className="nav-item">
-              <Link className="nav-link text-white fw-bold" to="/contact">
-                Get in Touch
-              </Link>
-            </li>
           </ul>
 
+          <Link
+            className="text-white fw-bold ms-lg-auto me-lg-2 mt-3 mt-lg-0"
+            to="/contact"
+            style={{ textDecoration: "none" }}
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Get in Touch
+          </Link>
+
           {currentUsername ? (
-            <Dropdown align="end" className="ms-lg-auto me-2">
+            <Dropdown align="end" className="me-2 mt-3 mt-lg-0">
               <Dropdown.Toggle
                 className="btn btn-link text-white fw-bold"
                 style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
@@ -132,7 +136,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </Dropdown>
           ) : (
             <button
-              className="btn btn-link text-white fw-bold me-2 ms-auto"
+              className="btn btn-link text-white fw-bold me-2 mt-3 mt-lg-0"
               style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
               onClick={() => {
                 setIsMenuOpen(false);
