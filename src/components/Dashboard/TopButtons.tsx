@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 interface TopButtonsProps {
   darkMode: boolean;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+  currentProjectName: string | null;
   showClimateZones: boolean;
   setShowClimateZones: React.Dispatch<React.SetStateAction<boolean>>;
 
@@ -24,6 +25,7 @@ interface TopButtonsProps {
 const TopButtons: React.FC<TopButtonsProps> = ({
   darkMode,
   setDarkMode,
+  currentProjectName,
   showClimateZones,
   setShowClimateZones,
 
@@ -112,6 +114,13 @@ const TopButtons: React.FC<TopButtonsProps> = ({
 
   const renderButtons = () => (
     <>
+      {currentProjectName && (
+        <div>
+          <button className="btn btn-outline-light fw-bold w-100" style={buttonStyle}>
+            PROJECT: {currentProjectName}
+          </button>
+        </div>
+      )}
       <div>
         <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
           LAST UPDATE: Loading...
@@ -217,6 +226,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               renderOnMount
               style={{ zIndex: 1080 }}
             >
+              {currentProjectName && (
+                <Dropdown.Item as="span" className="text-muted small">
+                  PROJECT: {currentProjectName}
+                </Dropdown.Item>
+              )}
               <Dropdown.Item as="span" className="text-muted small">
                 LAST UPDATE: Loading...
               </Dropdown.Item>

@@ -9,7 +9,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { ClimateThresholds } from "../../App";
+import type { ClimateThresholds, ProjectGeoJsonLayer } from "../../App";
 
 export interface City {
   id: number;
@@ -28,8 +28,16 @@ interface MapPanelProps {
   showClimateZones: boolean;
   showFloodMap: boolean;
   showPrecipitations: boolean;
+  showWatersheds: boolean;
+  projectName: string | null;
+  projectWatersheds: ProjectGeoJsonLayer[];
   small?: boolean;
   style?: React.CSSProperties;
+}
+
+interface WatershedFeatureSummary {
+  key: string;
+  name: string;
 }
 
 const Legend: React.FC = () => {
@@ -72,10 +80,77 @@ const MapPanel: React.FC<MapPanelProps> = ({
   showClimateZones,
   showFloodMap,
   showPrecipitations,
+  showWatersheds,
+  projectName,
+  projectWatersheds,
   small,
   style,
 }) => {
   const [climateZones, setClimateZones] = useState<any>(null);
+  const availableWatersheds = projectWatersheds.filter((layer) => layer.geojsonData);
+
+  const getWatershedFeatureSummary = (
+    feature: GeoJSON.Feature,
+    fallbackName: string
+  ): { name: string; areaKm2: number | null } => {
+    const properties =
+      feature.properties && typeof feature.properties === "object"
+        ? (feature.properties as Record<string, unknown>)
+        : {};
+
+    const rawName =
+      properties.watershed_name ??
+      properties.name ??
+      properties.NAME ??
+      properties.basin_name ??
+      properties.BASIN_NAME ??
+      properties.label;
+
+    const rawArea =
+      properties.area_km2 ??
+      properties.area ??
+      properties.AREA_KM2 ??
+      properties.AREA;
+
+    const areaKm2 =
+      typeof rawArea === "number"
+        ? rawArea
+        : typeof rawArea === "string" && !Number.isNaN(Number(rawArea))
+          ? Number(rawArea)
+          : null;
+
+    return {
+      name:
+        typeof rawName === "string" && rawName.trim().length > 0
+          ? rawName
+          : fallbackName,
+      areaKm2,
+    };
+  };
+
+  const watershedFeatureSummaries: WatershedFeatureSummary[] = availableWatersheds.flatMap(
+    (layer) => {
+      const geojson = layer.geojsonData;
+
+      if (!geojson || geojson.type !== "FeatureCollection") {
+        return [{ key: `layer-${layer.id}`, name: layer.name }];
+      }
+
+      const featureCollection = geojson as GeoJSON.FeatureCollection;
+
+      return featureCollection.features.map((feature, index) => {
+        const { name } = getWatershedFeatureSummary(
+          feature,
+          `${layer.name} ${index + 1}`
+        );
+
+        return {
+          key: `${layer.id}-${index}`,
+          name,
+        };
+      });
+    }
+  );
 
   useEffect(() => {
     fetch(process.env.PUBLIC_URL + "/data/africa_climate_zones.geojson")
@@ -104,6 +179,78 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
   return (
     <div className="w-100 h-100 position-relative">
+      {projectName && (projectWatersheds.length > 0 || showFloodMap) && (
+        <div
+          className="rounded shadow-sm"
+          style={{
+            position: "absolute",
+            bottom: 12,
+            left: 12,
+            zIndex: 1000,
+            width: 260,
+            maxHeight: 260,
+            overflowY: "auto",
+            padding: "0.9rem",
+            backgroundColor: "#2f343a",
+            color: "#f8f9fa",
+          }}
+        >
+          <div className="fw-bold mb-2">Project Layers</div>
+          <div className="small mb-3" style={{ color: "#c7ced6" }}>
+            {projectName}
+          </div>
+
+          {projectWatersheds.length > 0 && (
+            <div className="mb-3">
+              <div className="fw-semibold mb-2">Watersheds</div>
+              <div className="list-group">
+                {availableWatersheds.length > 0
+                  ? watershedFeatureSummaries.map((feature) => (
+                      <div
+                        key={feature.key}
+                        className="list-group-item py-2 px-2"
+                        style={{
+                          backgroundColor: "#3a4047",
+                          color: "#f8f9fa",
+                          borderColor: "#4b535c",
+                        }}
+                      >
+                        <div>{feature.name}</div>
+                      </div>
+                    ))
+                  : projectWatersheds.map((layer) => (
+                      <div
+                        key={layer.id}
+                        className="list-group-item py-2 px-2"
+                        style={{
+                          backgroundColor: "#3a4047",
+                          color: "#f8f9fa",
+                          borderColor: "#4b535c",
+                        }}
+                      >
+                        <div>{layer.name}</div>
+                        {!layer.geojsonData && (
+                          <div className="small" style={{ color: "#ffb3b3" }}>
+                            Layer file found, but geometry could not be loaded yet.
+                          </div>
+                        )}
+                      </div>
+                    ))}
+              </div>
+            </div>
+          )}
+
+          {showFloodMap && (
+            <div>
+              <div className="fw-semibold mb-2">Flood Maps</div>
+              <div className="small" style={{ color: "#c7ced6" }}>
+                Flood map items will appear here when project flood layers are connected.
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <MapContainer
         center={center}
         zoom={zoom}
@@ -132,19 +279,20 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
               if (!zone) return;
 
-              // If backend data exists → show thresholds
               if (t) {
-                layer.bindTooltip(`
+                layer.bindTooltip(
+                  `
                   <strong>${zone}</strong><br/>
                   Green: &lt; ${t.green} mm<br/>
                   Orange: ${t.green} - ${t.orange} mm<br/>
                   Red: &ge; ${t.orange} mm
-                `, {
-                  sticky: true,
-                  direction: "top",
-                });
+                `,
+                  {
+                    sticky: true,
+                    direction: "top",
+                  }
+                );
               } else {
-                // If backend missing → show only zone name
                 layer.bindTooltip(zone, {
                   sticky: true,
                   direction: "top",
@@ -179,6 +327,39 @@ const MapPanel: React.FC<MapPanelProps> = ({
               </CircleMarker>
             );
           })}
+
+        {showWatersheds &&
+          availableWatersheds.map(
+            (layer) =>
+              layer.geojsonData && (
+                <GeoJSON
+                  key={layer.id}
+                  data={layer.geojsonData as GeoJSON.GeoJsonObject}
+                  style={() => ({
+                    color: "#f39c12",
+                    weight: 2,
+                    opacity: 0.9,
+                    fillOpacity: 0.08,
+                  })}
+                  onEachFeature={(feature, leafletLayer) => {
+                    const { name, areaKm2 } = getWatershedFeatureSummary(
+                      feature,
+                      layer.name
+                    );
+
+                    leafletLayer.bindTooltip(
+                      areaKm2 !== null
+                        ? `<strong>${name}</strong><br/>Area: ${areaKm2.toFixed(1)} km²`
+                        : `<strong>${name}</strong>`,
+                      {
+                        sticky: true,
+                        direction: "top",
+                      }
+                    );
+                  }}
+                />
+              )
+          )}
       </MapContainer>
     </div>
   );

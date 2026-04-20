@@ -5,18 +5,24 @@ import MapPanel from "./PrecipMap";
 import type { City } from "./PrecipMap";
 import { ForecastRecord } from "./ForecastChart";
 import { motion } from "framer-motion";
-import type { ClimateThresholds } from "../../App";
+import type { ClimateThresholds, ProjectGeoJsonLayer } from "../../App";
 
 interface BodyProps {
   showClimateZones: boolean;
   showFloodMap: boolean;
   showPrecipitations: boolean;
+  showWatersheds: boolean;
+  projectName: string | null;
+  projectWatersheds: ProjectGeoJsonLayer[];
   thresholds: ClimateThresholds;
 }
 const Body: React.FC<BodyProps> = ({
   showClimateZones,
   showFloodMap,
   showPrecipitations,
+  showWatersheds,
+  projectName,
+  projectWatersheds,
   thresholds,
 }) => {
   const [cities, setCities] = useState<City[]>([]);
@@ -83,6 +89,9 @@ const Body: React.FC<BodyProps> = ({
             showClimateZones={showClimateZones}
             showFloodMap={showFloodMap}
             showPrecipitations={showPrecipitations}
+            showWatersheds={showWatersheds}
+            projectName={projectName}
+            projectWatersheds={projectWatersheds}
           />
         </motion.div>
       </div>

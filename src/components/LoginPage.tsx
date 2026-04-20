@@ -1,16 +1,25 @@
 import React, { useState } from "react";
 
-type Props = { onClose: () => void };
+type Props = {
+  onClose: () => void;
+  onLoginSuccess: (payload: {
+    username: string;
+    accessToken: string;
+    refreshToken: string;
+  }) => void;
+};
 
-const LoginPage: React.FC<Props> = ({ onClose }) => {
+const LoginPage: React.FC<Props> = ({ onClose, onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/login/", {
+      const res = await fetch("http://127.0.0.1:8000/api/token/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,14 +30,19 @@ const LoginPage: React.FC<Props> = ({ onClose }) => {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user_plan", data.plan);
+        onLoginSuccess({
+          username,
+          accessToken: data.access,
+          refreshToken: data.refresh,
+        });
         onClose();
       } else {
-        alert(data.error || "Login failed");
+        alert(data.detail || data.error || "Login failed");
       }
     } catch {
       alert("Server error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,8 +82,8 @@ const LoginPage: React.FC<Props> = ({ onClose }) => {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary w-100">
-            Sign in
+          <button type="submit" className="btn btn-primary w-100" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
       </div>

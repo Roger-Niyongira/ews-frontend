@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Dropdown from "react-bootstrap/Dropdown";
 import Swal from "sweetalert2";
 import { Link, useLocation } from "react-router-dom";
 
@@ -6,12 +7,20 @@ interface NavbarProps {
   onInstructionClick: () => void;
   onLoginClick: () => void;
   onSettingsClick: () => void;
+  onProjectsClick: () => void;
+  onLogout: () => void;
+  currentUsername: string | null;
+  currentProjectName: string | null;
 }
 
 const Navbar: React.FC<NavbarProps> = ({
   onInstructionClick,
   onLoginClick,
   onSettingsClick,
+  onProjectsClick,
+  onLogout,
+  currentUsername,
+  currentProjectName,
 }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -92,16 +101,47 @@ const Navbar: React.FC<NavbarProps> = ({
             </li>
           </ul>
 
-          <button
-            className="btn btn-link text-white fw-bold me-2 ms-auto"
-            style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
-            onClick={() => {
-              setIsMenuOpen(false);
-              onLoginClick();
-            }}
-          >
-            Login
-          </button>
+          {currentUsername ? (
+            <Dropdown align="end" className="ms-lg-auto me-2">
+              <Dropdown.Toggle
+                className="btn btn-link text-white fw-bold"
+                style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
+              >
+                {currentUsername}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item
+                  as="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onProjectsClick();
+                  }}
+                >
+                  Projects
+                </Dropdown.Item>
+                <Dropdown.Item
+                  as="button"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onLogout();
+                  }}
+                >
+                  Disconnect
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          ) : (
+            <button
+              className="btn btn-link text-white fw-bold me-2 ms-auto"
+              style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
+              onClick={() => {
+                setIsMenuOpen(false);
+                onLoginClick();
+              }}
+            >
+              Login
+            </button>
+          )}
 
           <button
             className="btn btn-link fw-bold d-flex align-items-center"

@@ -8,6 +8,7 @@ import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
 import LoginPage from "./components/LoginPage";
 import ContactPage from "./components/ContactPage";
+import ProjectListModal, { UserProject } from "./components/ProjectListModal";
 import SettingsModal from "./components/SettingsModal";
 import "./App.css";
 
@@ -18,9 +19,24 @@ export interface ClimateThreshold {
 
 export type ClimateThresholds = Record<string, ClimateThreshold>;
 
+export interface ProjectGeoJsonLayer {
+  id: number;
+  name: string;
+  project: string | null;
+  is_public: boolean;
+  geojson_file: string;
+  geojsonData: GeoJSON.GeoJsonObject | null;
+}
+
 function App() {
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+  const [selectedProject, setSelectedProject] = useState<UserProject | null>(() => {
+    const savedProject = localStorage.getItem("ews_selected_project");
+    return savedProject ? (JSON.parse(savedProject) as UserProject) : null;
+  });
   const [showInstruction, setShowInstruction] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const [showProjects, setShowProjects] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [showClimateZones, setShowClimateZones] = useState(false);
@@ -32,11 +48,23 @@ function App() {
   const [showFloodMap, setShowFloodMap] = useState(false);
   const [floodMapStatus] = useState<"public" | "private" | "none">("none");
   const [userCanAccessFloodMap] = useState(false);
-  const [watershedStatus] = useState<"public" | "private" | "none">("none");
-  const [userCanAccessWatersheds] = useState(false);
   const [defaultThresholds, setDefaultThresholds] = useState<ClimateThresholds>({});
   const [thresholds, setThresholds] = useState<ClimateThresholds>({});
-  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+  const [currentUsername, setCurrentUsername] = useState<string | null>(() =>
+    localStorage.getItem("ews_username")
+  );
+  const [accessToken, setAccessToken] = useState<string | null>(() =>
+    localStorage.getItem("ews_access_token")
+  );
+  const [, setRefreshToken] = useState<string | null>(() =>
+    localStorage.getItem("ews_refresh_token")
+  );
+  const [projects, setProjects] = useState<UserProject[]>([]);
+  const [projectWatersheds, setProjectWatersheds] = useState<ProjectGeoJsonLayer[]>([]);
+  const watershedStatus: "public" | "private" | "none" =
+    projectWatersheds.length > 0 && selectedProject ? "private" : "none";
+  const userCanAccessWatersheds =
+    Boolean(selectedProject) && projectWatersheds.length > 0;
 
   useEffect(() => {
     if (location.pathname === "/about") {
@@ -55,6 +83,44 @@ function App() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (!accessToken) {
+      setProjects([]);
+      setSelectedProject(null);
+      return;
+    }
+
+    axios
+      .get<UserProject[]>(`${API_BASE_URL}/api/my-projects/`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .then((res) => {
+        setProjects(res.data);
+        setSelectedProject((current) => {
+          const savedProject = localStorage.getItem("ews_selected_project");
+          if (!savedProject) {
+            return current;
+          }
+
+          const parsedProject = JSON.parse(savedProject) as UserProject;
+          const stillAllowed = res.data.some((project) => project.id === parsedProject.id);
+
+          return stillAllowed ? parsedProject : null;
+        });
+      })
+      .catch(() => {
+        localStorage.removeItem("ews_username");
+        localStorage.removeItem("ews_access_token");
+        localStorage.removeItem("ews_refresh_token");
+        localStorage.removeItem("ews_selected_project");
+        setCurrentUsername(null);
+        setAccessToken(null);
+        setRefreshToken(null);
+        setProjects([]);
+        setSelectedProject(null);
+      });
+  }, [API_BASE_URL, accessToken]);
+
+  useEffect(() => {
     axios
       .get<ClimateThresholds>(`${API_BASE_URL}/api/climate-thresholds/`)
       .then((res) => {
@@ -67,6 +133,47 @@ function App() {
       });
   }, [API_BASE_URL]);
 
+  useEffect(() => {
+    if (!selectedProject || !accessToken) {
+      setProjectWatersheds([]);
+      setShowWatersheds(false);
+      return;
+    }
+
+    axios
+      .get<Omit<ProjectGeoJsonLayer, "geojsonData">[]>(
+        `${API_BASE_URL}/api/projects/${selectedProject.slug}/watersheds/`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      )
+      .then(async (res) => {
+        const watershedLayers = await Promise.all(
+          res.data.map(async (layer) => {
+            try {
+              const geojsonRes = await fetch(layer.geojson_file);
+
+              if (!geojsonRes.ok) {
+                throw new Error("Unable to load GeoJSON file");
+              }
+
+              const geojsonData = (await geojsonRes.json()) as GeoJSON.GeoJsonObject;
+              return { ...layer, geojsonData };
+            } catch {
+              return { ...layer, geojsonData: null };
+            }
+          })
+        );
+
+        setProjectWatersheds(watershedLayers);
+        setShowWatersheds(watershedLayers.length > 0);
+      })
+      .catch(() => {
+        setProjectWatersheds([]);
+        setShowWatersheds(false);
+      });
+  }, [API_BASE_URL, accessToken, selectedProject]);
+
   const handleApplyThresholds = (nextThresholds: ClimateThresholds) => {
     setThresholds(nextThresholds);
     setShowSettings(false);
@@ -77,12 +184,49 @@ function App() {
     setShowSettings(false);
   };
 
+  const handleLoginSuccess = (payload: {
+    username: string;
+    accessToken: string;
+    refreshToken: string;
+  }) => {
+    setCurrentUsername(payload.username);
+    setAccessToken(payload.accessToken);
+    setRefreshToken(payload.refreshToken);
+    localStorage.setItem("ews_username", payload.username);
+    localStorage.setItem("ews_access_token", payload.accessToken);
+    localStorage.setItem("ews_refresh_token", payload.refreshToken);
+    setShowProjects(true);
+  };
+
+  const handleProjectSelect = (project: UserProject) => {
+    setSelectedProject(project);
+    localStorage.setItem("ews_selected_project", JSON.stringify(project));
+    setShowProjects(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("ews_username");
+    localStorage.removeItem("ews_access_token");
+    localStorage.removeItem("ews_refresh_token");
+    localStorage.removeItem("ews_selected_project");
+    setCurrentUsername(null);
+    setAccessToken(null);
+    setRefreshToken(null);
+    setProjects([]);
+    setSelectedProject(null);
+    setShowProjects(false);
+  };
+
   return (
     <div className="d-flex flex-column vh-100">
       <Navbar
         onInstructionClick={() => setShowInstruction(true)}
         onLoginClick={() => setShowLogin(true)}
         onSettingsClick={() => setShowSettings(true)}
+        onProjectsClick={() => setShowProjects(true)}
+        onLogout={handleLogout}
+        currentUsername={currentUsername}
+        currentProjectName={selectedProject?.name ?? null}
       />
 
       <div
@@ -96,6 +240,7 @@ function App() {
           <TopButtons
             darkMode={darkMode}
             setDarkMode={setDarkMode}
+            currentProjectName={selectedProject?.name ?? null}
             showClimateZones={showClimateZones}
             setShowClimateZones={setShowClimateZones}
             showFloodMap={showFloodMap}
@@ -122,6 +267,9 @@ function App() {
                   showClimateZones={showClimateZones}
                   showFloodMap={showFloodMap}
                   showPrecipitations={showPrecipitations}
+                  projectName={selectedProject?.name ?? null}
+                  projectWatersheds={projectWatersheds}
+                  showWatersheds={showWatersheds}
                   thresholds={thresholds}
                 />
               }
@@ -137,7 +285,18 @@ function App() {
         <InstructionPanel onClose={() => setShowInstruction(false)} />
       )}
       {showLogin && (
-        <LoginPage onClose={() => setShowLogin(false)} />
+        <LoginPage
+          onClose={() => setShowLogin(false)}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
+      {showProjects && currentUsername && (
+        <ProjectListModal
+          onClose={() => setShowProjects(false)}
+          projects={projects}
+          username={currentUsername}
+          onProjectSelect={handleProjectSelect}
+        />
       )}
       {showSettings && (
         <SettingsModal
