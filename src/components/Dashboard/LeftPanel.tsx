@@ -29,7 +29,8 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
   const thresholdInfo =
     selectedCity?.climate_zone ? thresholds[selectedCity.climate_zone] : undefined;
   const detailLabelStyle = {
-    color: "#9fb3c8",
+    color: "inherit",
+    opacity: 0.8,
     letterSpacing: "0.04em",
   };
 
