@@ -159,15 +159,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({
       </div>
       <div>
         <button
-          className={`btn ${showPrecipitations ? "btn-warning" : "btn-info"} fw-bold w-100`}
-          style={buttonStyle}
-          onClick={() => setShowPrecipitations((v) => !v)}
-        >
-          {showPrecipitations ? "HIDE PRECIPITATIONS" : "VIEW PRECIPITATIONS"}
-        </button>
-      </div>
-      <div>
-        <button
           className={`btn ${showWatersheds ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
           onClick={() => {
@@ -184,7 +175,16 @@ const TopButtons: React.FC<TopButtonsProps> = ({
             setShowWatersheds((v) => !v);
           }}
         >
-          {showWatersheds ? "HIDE WATERSHEDS" : "VIEW WATERSHEDS"}
+          {showWatersheds ? "HIDE WATERSHEDS" : "SHOW WATERSHEDS"}
+        </button>
+      </div>
+      <div>
+        <button
+          className={`btn ${showPrecipitations ? "btn-warning" : "btn-info"} fw-bold w-100`}
+          style={buttonStyle}
+          onClick={() => setShowPrecipitations((v) => !v)}
+        >
+          {showPrecipitations ? "HIDE PRECIPITATIONS" : "SHOW PRECIPITATIONS"}
         </button>
       </div>
       <div>
