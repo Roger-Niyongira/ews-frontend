@@ -9,6 +9,7 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import type { ClimateThresholds } from "../../App";
 
 export interface City {
   id: number;
@@ -20,14 +21,13 @@ export interface City {
   climate_zone?: string | null;
 }
 
-//type ThresholdsMap = Record<string, { green: number; orange: number }>;
-
 interface MapPanelProps {
   cities: City[];
-  thresholds: any;
+  thresholds: ClimateThresholds;
   onCityClick: (cityId: number) => void;
   showClimateZones: boolean;
   showFloodMap: boolean;
+  showPrecipitations: boolean;
   small?: boolean;
   style?: React.CSSProperties;
 }
@@ -71,6 +71,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
   onCityClick,
   showClimateZones,
   showFloodMap,
+  showPrecipitations,
   small,
   style,
 }) => {
@@ -153,30 +154,31 @@ const MapPanel: React.FC<MapPanelProps> = ({
           />
         )}
 
-        {cities.map((city) => {
-          const [lon, lat] = city.location;
-          return (
-            <CircleMarker
-              key={city.id}
-              center={[lat, lon]}
-              radius={5}
-              pathOptions={{
-                color: city.warning_level,
-                fillOpacity: 0.6,
-                stroke: false,
-              }}
-              eventHandlers={{
-                click: () => onCityClick(city.id),
-              }}
-            >
-              <Tooltip direction="top" offset={[0, -5]}>
-                {city.city} [{city.country}]
-                <br />
-                Pop: {city.population ?? "N/A"}
-              </Tooltip>
-            </CircleMarker>
-          );
-        })}
+        {showPrecipitations &&
+          cities.map((city) => {
+            const [lon, lat] = city.location;
+            return (
+              <CircleMarker
+                key={city.id}
+                center={[lat, lon]}
+                radius={5}
+                pathOptions={{
+                  color: city.warning_level,
+                  fillOpacity: 0.6,
+                  stroke: false,
+                }}
+                eventHandlers={{
+                  click: () => onCityClick(city.id),
+                }}
+              >
+                <Tooltip direction="top" offset={[0, -5]}>
+                  {city.city} [{city.country}]
+                  <br />
+                  Pop: {city.population ?? "N/A"}
+                </Tooltip>
+              </CircleMarker>
+            );
+          })}
       </MapContainer>
     </div>
   );

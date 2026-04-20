@@ -3,17 +3,22 @@ import axios from "axios";
 import LeftPanel from "./LeftPanel";
 import MapPanel from "./PrecipMap";
 import type { City } from "./PrecipMap";
-import SwatMap from "./SwatMap";
 import { ForecastRecord } from "./ForecastChart";
-import type { ViewMode } from "../../App";
 import { motion } from "framer-motion";
+import type { ClimateThresholds } from "../../App";
 
 interface BodyProps {
-  mode: ViewMode;
   showClimateZones: boolean;
   showFloodMap: boolean;
+  showPrecipitations: boolean;
+  thresholds: ClimateThresholds;
 }
-const Body: React.FC<BodyProps> = ({ mode, showClimateZones, showFloodMap }) => {
+const Body: React.FC<BodyProps> = ({
+  showClimateZones,
+  showFloodMap,
+  showPrecipitations,
+  thresholds,
+}) => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [selectedCityName, setSelectedCityName] = useState<string | null>(null);
@@ -29,14 +34,6 @@ const Body: React.FC<BodyProps> = ({ mode, showClimateZones, showFloodMap }) => 
       .get<City[]>(`${API_BASE_URL}/api/cities/`)
       .then((res) => setCities(res.data))
       .catch(() => setCities([]));
-  }, [API_BASE_URL]);
-
-  const [thresholds, setThresholds] = useState({});
-  useEffect(() => {
-    axios
-      .get(`${API_BASE_URL}/api/climate-thresholds/`)
-      .then(res => setThresholds(res.data))
-      .catch(() => setThresholds({}));
   }, [API_BASE_URL]);
 
   const handleCityClick = (cityId: number) => {
@@ -63,11 +60,12 @@ const Body: React.FC<BodyProps> = ({ mode, showClimateZones, showFloodMap }) => 
           className="d-none d-lg-flex col-lg-4 flex-column h-100"
         >
           <LeftPanel
-            mode={mode}
             cities={cities}
             cityId={selectedCityId}
             cityName={selectedCityName}
             cityCountry={selectedCityCountry}
+            selectedCity={cities.find((city) => city.id === selectedCityId) ?? null}
+            thresholds={thresholds}
             forecastData={forecastData}
             error={forecastError}
             onCityClick={handleCityClick}
@@ -78,17 +76,14 @@ const Body: React.FC<BodyProps> = ({ mode, showClimateZones, showFloodMap }) => 
           transition={{ duration: 0.3 }}
           className="col-12 col-lg-8 d-flex flex-column h-100"
         >
-          {mode === "swat" ? (
-            <SwatMap />
-          ) : (
-            <MapPanel
-              cities={cities}
-              thresholds={thresholds}
-              onCityClick={handleCityClick}
-              showClimateZones={showClimateZones}
-              showFloodMap={showFloodMap}
-            />
-          )}
+          <MapPanel
+            cities={cities}
+            thresholds={thresholds}
+            onCityClick={handleCityClick}
+            showClimateZones={showClimateZones}
+            showFloodMap={showFloodMap}
+            showPrecipitations={showPrecipitations}
+          />
         </motion.div>
       </div>
     </div>

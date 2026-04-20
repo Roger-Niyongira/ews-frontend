@@ -93,10 +93,10 @@ const InstructionPanel: React.FC<InstructionPanelProps> = ({ onClose }) => {
           depending on preferences
         </li>
         <li className="mb-2">
-          FILTER SEARCH: A way to filter by country, city, and watershed
+          VIEW/HIDE PRECIPITATIONS: Show or remove precipitation points from the map.
         </li>
         <li className="mb-2">
-          VIEW SWAT EWS / VIEW PRECIPITATIONS: Toggle between SWAT Model (based on precipitations) and Precipitations. 
+          VIEW/HIDE WATERSHEDS: Reserved for watershed layers when they become available.
         </li>
         <li className="mb-2">
           MAP: Visually represent areas with correspinding risk levels. When a

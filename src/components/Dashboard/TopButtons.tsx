@@ -1,40 +1,45 @@
 import React, { useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import ScenarioPanel from "./ScenarioPanel";
-import type { ViewMode } from "../../App";
-
+import Swal from "sweetalert2";
 
 interface TopButtonsProps {
   darkMode: boolean;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
-  mode: ViewMode;
-  setMode: React.Dispatch<React.SetStateAction<ViewMode>>;
   showClimateZones: boolean;
   setShowClimateZones: React.Dispatch<React.SetStateAction<boolean>>;
 
   showFloodMap: boolean;
   setShowFloodMap: React.Dispatch<React.SetStateAction<boolean>>;
+  showPrecipitations: boolean;
+  setShowPrecipitations: React.Dispatch<React.SetStateAction<boolean>>;
+  showWatersheds: boolean;
+  setShowWatersheds: React.Dispatch<React.SetStateAction<boolean>>;
   floodMapStatus: "public" | "private" | "none";
   userCanAccessFloodMap: boolean;
+  watershedStatus: "public" | "private" | "none";
+  userCanAccessWatersheds: boolean;
+  onLoginClick: () => void;
 }
 
 const TopButtons: React.FC<TopButtonsProps> = ({
   darkMode,
   setDarkMode,
-  mode,
-  setMode,
   showClimateZones,
   setShowClimateZones,
 
   showFloodMap,
   setShowFloodMap,
+  showPrecipitations,
+  setShowPrecipitations,
+  showWatersheds,
+  setShowWatersheds,
   floodMapStatus,
   userCanAccessFloodMap,
+  watershedStatus,
+  userCanAccessWatersheds,
+  onLoginClick,
 }) => {
   const isMobile = window.innerWidth <= 768;
-  const [thresholds, setThresholds] = useState({ medium: 40, high: 80 });
-  const [showScenarioPanel, setShowScenarioPanel] = useState(false);
-  const [scenarioPosition, setScenarioPosition] = useState({ x: 16, y: 96 });
   const [showInfoMenu, setShowInfoMenu] = useState(false);
 
   const buttonStyle = {
@@ -43,6 +48,66 @@ const TopButtons: React.FC<TopButtonsProps> = ({
     fontSize: "0.9rem",
     lineHeight: "1.2",
     whiteSpace: "nowrap" as const,
+  };
+
+  const showFloodMapUnavailableMessage = () => {
+    Swal.fire({
+      icon: "info",
+      html: `
+        <p>
+          Flood maps are not available yet. Please
+          <a href="#/contact" id="availability-contact-link">contact us</a>
+          for more information or
+          <a href="#" id="availability-login-link">login</a>
+          for your specific region.
+        </p>
+      `,
+      confirmButtonText: "Close",
+      didOpen: () => {
+        const contactLink = document.getElementById("availability-contact-link");
+        const loginLink = document.getElementById("availability-login-link");
+
+        contactLink?.addEventListener("click", () => {
+          Swal.close();
+        });
+
+        loginLink?.addEventListener("click", (event) => {
+          event.preventDefault();
+          Swal.close();
+          onLoginClick();
+        });
+      },
+    });
+  };
+
+  const showWatershedUnavailableMessage = () => {
+    Swal.fire({
+      icon: "info",
+      html: `
+        <p>
+          Watershed layers are not available yet. Please
+          <a href="#/contact" id="availability-contact-link">contact us</a>
+          for more information or
+          <a href="#" id="availability-login-link">login</a>
+          for your specific region.
+        </p>
+      `,
+      confirmButtonText: "Close",
+      didOpen: () => {
+        const contactLink = document.getElementById("availability-contact-link");
+        const loginLink = document.getElementById("availability-login-link");
+
+        contactLink?.addEventListener("click", () => {
+          Swal.close();
+        });
+
+        loginLink?.addEventListener("click", (event) => {
+          event.preventDefault();
+          Swal.close();
+          onLoginClick();
+        });
+      },
+    });
   };
 
   const renderButtons = () => (
@@ -68,7 +133,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           style={buttonStyle}
           onClick={() => {
             if (floodMapStatus === "none") {
-              alert("Flood map not available yet. Please contact us for more information.");
+              showFloodMapUnavailableMessage();
               return;
             }
 
@@ -85,46 +150,32 @@ const TopButtons: React.FC<TopButtonsProps> = ({
       </div>
       <div>
         <button
-          className="btn btn-info fw-bold w-100"
+          className={`btn ${showPrecipitations ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            setScenarioPosition({
-              x: Math.max(16, rect.left),
-              y: rect.bottom + 8,
-            });
-            setShowScenarioPanel((v) => !v);
-          }}
+          onClick={() => setShowPrecipitations((v) => !v)}
         >
-          SCENARIOS
+          {showPrecipitations ? "HIDE PRECIPITATIONS" : "VIEW PRECIPITATIONS"}
         </button>
       </div>
       <div>
-        <Dropdown>
-          <Dropdown.Toggle
-            className="btn btn-info fw-bold w-100"
-            style={buttonStyle}
-          >
-            FILTER SEARCH
-          </Dropdown.Toggle>
-          <Dropdown.Menu
-            renderOnMount
-            popperConfig={{ strategy: "fixed" }}
-            style={{ zIndex: 1080 }}
-          >
-            <Dropdown.Item href="#">Watershed</Dropdown.Item>
-            <Dropdown.Item href="#">Country</Dropdown.Item>
-            <Dropdown.Item href="#">Model</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </div>
-      <div>
         <button
-          className="btn btn-success fw-bold w-100"
+          className={`btn ${showWatersheds ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
-          onClick={() => setMode(mode === "swat" ? "precip" : "swat")}
+          onClick={() => {
+            if (watershedStatus === "none") {
+              showWatershedUnavailableMessage();
+              return;
+            }
+
+            if (watershedStatus === "private" && !userCanAccessWatersheds) {
+              alert("You do not have access to these watershed layers");
+              return;
+            }
+
+            setShowWatersheds((v) => !v);
+          }}
         >
-          {mode === "swat" ? "VIEW PRECIPITATIONS" : "VIEW SWAT EWS"}
+          {showWatersheds ? "HIDE WATERSHEDS" : "VIEW WATERSHEDS"}
         </button>
       </div>
       <div>
@@ -183,7 +234,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
                 onClick={() => {
                   setShowInfoMenu(false);
                   if (floodMapStatus === "none") {
-                    alert("Flood map not available yet. Please contact us for more information.");
+                    showFloodMapUnavailableMessage();
                     return;
                   }
 
@@ -201,26 +252,29 @@ const TopButtons: React.FC<TopButtonsProps> = ({
                 as="button"
                 onClick={() => {
                   setShowInfoMenu(false);
-                  setScenarioPosition({ x: 16, y: 96 });
-                  setShowScenarioPanel(true);
+                  setShowPrecipitations((v) => !v);
                 }}
               >
-                SCENARIOS
-              </Dropdown.Item>
-              <Dropdown.Item
-                href="#"
-                onClick={() => setShowInfoMenu(false)}
-              >
-                FILTER SEARCH
+                {showPrecipitations ? "HIDE PRECIPITATIONS" : "VIEW PRECIPITATIONS"}
               </Dropdown.Item>
               <Dropdown.Item
                 as="button"
                 onClick={() => {
                   setShowInfoMenu(false);
-                  setMode(mode === "swat" ? "precip" : "swat");
+                  if (watershedStatus === "none") {
+                    showWatershedUnavailableMessage();
+                    return;
+                  }
+
+                  if (watershedStatus === "private" && !userCanAccessWatersheds) {
+                    alert("You do not have access to these watershed layers");
+                    return;
+                  }
+
+                  setShowWatersheds((v) => !v);
                 }}
               >
-                {mode === "swat" ? "VIEW PRECIPITATIONS" : "VIEW SWAT EWS"}
+                {showWatersheds ? "HIDE WATERSHEDS" : "VIEW WATERSHEDS"}
               </Dropdown.Item>
               <Dropdown.Item
                 as="button"
@@ -237,14 +291,6 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           renderButtons()
         )}
       </div>
-      {showScenarioPanel && (
-        <ScenarioPanel
-          onClose={() => setShowScenarioPanel(false)}
-          thresholds={thresholds}
-          setThresholds={setThresholds}
-          initialPosition={scenarioPosition}
-        />
-      )}
     </div>
   );
 };

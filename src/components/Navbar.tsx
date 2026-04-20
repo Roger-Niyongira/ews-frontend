@@ -5,9 +5,14 @@ import { Link, useLocation } from "react-router-dom";
 interface NavbarProps {
   onInstructionClick: () => void;
   onLoginClick: () => void;
+  onSettingsClick: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => {
+const Navbar: React.FC<NavbarProps> = ({
+  onInstructionClick,
+  onLoginClick,
+  onSettingsClick,
+}) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isDashboard = location.pathname === "/dashboard" || location.pathname === "/";
@@ -62,21 +67,10 @@ const Navbar: React.FC<NavbarProps> = ({ onInstructionClick, onLoginClick }) => 
                 style={{ textDecoration: "none" }}
                 onClick={() => {
                   setIsMenuOpen(false);
-                  Swal.fire({
-                    icon: "info",
-                    html: `
-                      <p style="font-size: 14px;">This page is under development. See Preview Below:</p>
-                      <img 
-                        src="${process.env.PUBLIC_URL}/preference_mockup.png"
-                        alt="Preview"
-                        style="height: 260px; object-fit: contain; border-radius: 10px; margin-top: 10px;" />
-                    `,
-                    confirmButtonText: "OK",
-                    width: 400,
-                  });
+                  onSettingsClick();
                 }}
               >
-                Settings
+                Preferences
               </button>
             </li>
             <li className="nav-item">
