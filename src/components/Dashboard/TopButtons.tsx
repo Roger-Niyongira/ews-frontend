@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Dropdown from "react-bootstrap/Dropdown";
 import Swal from "sweetalert2";
 
 interface TopButtonsProps {
@@ -224,45 +223,44 @@ const TopButtons: React.FC<TopButtonsProps> = ({
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {isMobile ? (
-          <Dropdown
-            show={showInfoMenu}
-            onToggle={(nextShow) => setShowInfoMenu(nextShow)}
-          >
-            <Dropdown.Toggle
+          <div className="position-relative">
+            <button
+              type="button"
               className="btn btn-info fw-bold"
-              style={buttonStyle}
+              style={{ ...buttonStyle, touchAction: "manipulation" }}
+              aria-expanded={showInfoMenu}
+              aria-controls="dashboardInfoMenu"
               onClick={() => setShowInfoMenu((open) => !open)}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                setShowInfoMenu((open) => !open);
-              }}
             >
               ☰ INFO
-            </Dropdown.Toggle>
-            <Dropdown.Menu
-              popperConfig={{ strategy: "fixed" }}
-              renderOnMount
-              style={{ zIndex: 1080 }}
-            >
+            </button>
+            {showInfoMenu && (
+              <div
+                id="dashboardInfoMenu"
+                className="position-absolute bg-white border rounded shadow-sm mt-1 py-1"
+                style={{ zIndex: 1080, minWidth: 230 }}
+              >
               {currentProjectName && (
-                <Dropdown.Item as="span" className="text-muted small">
+                <div className="px-3 py-2 text-muted small">
                   PROJECT: {currentProjectName}
-                </Dropdown.Item>
+                </div>
               )}
-              <Dropdown.Item as="span" className="text-muted small">
+              <div className="px-3 py-2 text-muted small">
                 LAST UPDATE: Loading...
-              </Dropdown.Item>
-              <Dropdown.Item
-                as="button"
+              </div>
+              <button
+                type="button"
+                className="dropdown-item"
                 onClick={() => {
                   setShowInfoMenu(false);
                   setShowClimateZones((v) => !v);
                 }}
               >
                 {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
-              </Dropdown.Item>
-              <Dropdown.Item
-                as="button"
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
                 onClick={() => {
                   setShowInfoMenu(false);
                   if (floodMapStatus === "none") {
@@ -279,9 +277,10 @@ const TopButtons: React.FC<TopButtonsProps> = ({
                 }}
               >
                 {showFloodMap ? "HIDE FLOOD MAP" : "SHOW FLOOD MAP"}
-              </Dropdown.Item>
-              <Dropdown.Item
-                as="button"
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
                 onClick={() => {
                   setShowInfoMenu(false);
                   if (!precipitationAvailable) {
@@ -293,9 +292,10 @@ const TopButtons: React.FC<TopButtonsProps> = ({
                 }}
               >
                 {showPrecipitations ? "HIDE PRECIPITATIONS" : "VIEW PRECIPITATIONS"}
-              </Dropdown.Item>
-              <Dropdown.Item
-                as="button"
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
                 onClick={() => {
                   setShowInfoMenu(false);
                   if (watershedStatus === "none") {
@@ -312,18 +312,20 @@ const TopButtons: React.FC<TopButtonsProps> = ({
                 }}
               >
                 {showWatersheds ? "HIDE WATERSHEDS" : "VIEW WATERSHEDS"}
-              </Dropdown.Item>
-              <Dropdown.Item
-                as="button"
+              </button>
+              <button
+                type="button"
+                className="dropdown-item"
                 onClick={() => {
                   setShowInfoMenu(false);
                   setDarkMode((d) => !d);
                 }}
               >
                 {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
+              </button>
+              </div>
+            )}
+          </div>
         ) : (
           renderButtons()
         )}
