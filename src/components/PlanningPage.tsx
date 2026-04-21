@@ -78,10 +78,11 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                       type="button"
                       className="btn btn-sm rounded-circle d-inline-flex align-items-center justify-content-center text-white border-0"
                       style={{
-                        width: "28px",
-                        height: "28px",
+                        width: "40px",
+                        height: "40px",
                         padding: 0,
                         backgroundColor: "#0d6efd",
+                        touchAction: "manipulation",
                       }}
                       aria-label="Planning tool information"
                       aria-expanded={isInfoOpen}

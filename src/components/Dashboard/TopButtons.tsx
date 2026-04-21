@@ -217,119 +217,118 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   );
 
   return (
-    <div className="container-fluid mt-3 mb-1">
+    <div className="container-fluid mt-3 mb-1 position-relative">
       <div
         className="d-flex flex-nowrap gap-2 overflow-auto overflow-lg-visible justify-content-lg-center pb-1"
         style={{ WebkitOverflowScrolling: "touch" }}
       >
         {isMobile ? (
-          <div className="position-relative">
+          <div>
             <button
               type="button"
               className="btn btn-info fw-bold"
               style={{ ...buttonStyle, touchAction: "manipulation" }}
               aria-expanded={showInfoMenu}
               aria-controls="dashboardInfoMenu"
-              onClick={() => setShowInfoMenu((open) => !open)}
+              onPointerUp={() => setShowInfoMenu((open) => !open)}
             >
               ☰ INFO
             </button>
-            {showInfoMenu && (
-              <div
-                id="dashboardInfoMenu"
-                className="position-absolute bg-white border rounded shadow-sm mt-1 py-1"
-                style={{ zIndex: 1080, minWidth: 230 }}
-              >
-              {currentProjectName && (
-                <div className="px-3 py-2 text-muted small">
-                  PROJECT: {currentProjectName}
-                </div>
-              )}
-              <div className="px-3 py-2 text-muted small">
-                LAST UPDATE: Loading...
-              </div>
-              <button
-                type="button"
-                className="dropdown-item"
-                onClick={() => {
-                  setShowInfoMenu(false);
-                  setShowClimateZones((v) => !v);
-                }}
-              >
-                {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
-              </button>
-              <button
-                type="button"
-                className="dropdown-item"
-                onClick={() => {
-                  setShowInfoMenu(false);
-                  if (floodMapStatus === "none") {
-                    showFloodMapUnavailableMessage();
-                    return;
-                  }
-
-                  if (floodMapStatus === "private" && !userCanAccessFloodMap) {
-                    alert("You do not have access to this flood map");
-                    return;
-                  }
-
-                  setShowFloodMap((v) => !v);
-                }}
-              >
-                {showFloodMap ? "HIDE FLOOD MAP" : "SHOW FLOOD MAP"}
-              </button>
-              <button
-                type="button"
-                className="dropdown-item"
-                onClick={() => {
-                  setShowInfoMenu(false);
-                  if (!precipitationAvailable) {
-                    showPrecipitationUnavailableMessage();
-                    return;
-                  }
-
-                  setShowPrecipitations((v) => !v);
-                }}
-              >
-                {showPrecipitations ? "HIDE PRECIPITATIONS" : "VIEW PRECIPITATIONS"}
-              </button>
-              <button
-                type="button"
-                className="dropdown-item"
-                onClick={() => {
-                  setShowInfoMenu(false);
-                  if (watershedStatus === "none") {
-                    showWatershedUnavailableMessage();
-                    return;
-                  }
-
-                  if (watershedStatus === "private" && !userCanAccessWatersheds) {
-                    alert("You do not have access to these watershed layers");
-                    return;
-                  }
-
-                  setShowWatersheds((v) => !v);
-                }}
-              >
-                {showWatersheds ? "HIDE WATERSHEDS" : "VIEW WATERSHEDS"}
-              </button>
-              <button
-                type="button"
-                className="dropdown-item"
-                onClick={() => {
-                  setShowInfoMenu(false);
-                  setDarkMode((d) => !d);
-                }}
-              >
-                {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
-              </button>
-              </div>
-            )}
           </div>
         ) : (
           renderButtons()
         )}
       </div>
+
+      {isMobile && showInfoMenu && (
+        <div
+          id="dashboardInfoMenu"
+          className="position-absolute bg-white border rounded shadow-sm py-1"
+          style={{ zIndex: 1080, top: "100%", left: "0.75rem", minWidth: 230 }}
+        >
+          {currentProjectName && (
+            <div className="px-3 py-2 text-muted small">
+              PROJECT: {currentProjectName}
+            </div>
+          )}
+          <div className="px-3 py-2 text-muted small">LAST UPDATE: Loading...</div>
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={() => {
+              setShowInfoMenu(false);
+              setShowClimateZones((v) => !v);
+            }}
+          >
+            {showClimateZones ? "HIDE CLIMATE ZONES" : "SHOW CLIMATE ZONES"}
+          </button>
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={() => {
+              setShowInfoMenu(false);
+              if (floodMapStatus === "none") {
+                showFloodMapUnavailableMessage();
+                return;
+              }
+
+              if (floodMapStatus === "private" && !userCanAccessFloodMap) {
+                alert("You do not have access to this flood map");
+                return;
+              }
+
+              setShowFloodMap((v) => !v);
+            }}
+          >
+            {showFloodMap ? "HIDE FLOOD MAP" : "SHOW FLOOD MAP"}
+          </button>
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={() => {
+              setShowInfoMenu(false);
+              if (!precipitationAvailable) {
+                showPrecipitationUnavailableMessage();
+                return;
+              }
+
+              setShowPrecipitations((v) => !v);
+            }}
+          >
+            {showPrecipitations ? "HIDE PRECIPITATIONS" : "VIEW PRECIPITATIONS"}
+          </button>
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={() => {
+              setShowInfoMenu(false);
+              if (watershedStatus === "none") {
+                showWatershedUnavailableMessage();
+                return;
+              }
+
+              if (watershedStatus === "private" && !userCanAccessWatersheds) {
+                alert("You do not have access to these watershed layers");
+                return;
+              }
+
+              setShowWatersheds((v) => !v);
+            }}
+          >
+            {showWatersheds ? "HIDE WATERSHEDS" : "VIEW WATERSHEDS"}
+          </button>
+          <button
+            type="button"
+            className="dropdown-item"
+            onClick={() => {
+              setShowInfoMenu(false);
+              setDarkMode((d) => !d);
+            }}
+          >
+            {darkMode ? "☀ Light Mode" : "🌙 Dark Mode"}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
