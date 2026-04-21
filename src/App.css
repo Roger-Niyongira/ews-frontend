@@ -36,15 +36,3 @@
     transform: rotate(360deg);
   }
 }
-
-.dashboard-precip-map .leaflet-top.leaflet-right {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.dashboard-precip-map .leaflet-top.leaflet-right .leaflet-control {
-  float: none;
-  margin-left: 0;
-  margin-right: 0;
-}

@@ -319,6 +319,10 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
   const visibleCities = useMemo(() => {
     if (precipitationScope === "watersheds") {
+      if (!canUseWatershedScope) {
+        return cities;
+      }
+
       return cities.filter((city) =>
         availableWatersheds.some((layer) =>
           isPointInGeoJsonObject(city.location, layer.geojsonData)
@@ -333,7 +337,13 @@ const MapPanel: React.FC<MapPanelProps> = ({
     }
 
     return cities;
-  }, [availableWatersheds, cities, drawnPolygon, precipitationScope]);
+  }, [
+    availableWatersheds,
+    canUseWatershedScope,
+    cities,
+    drawnPolygon,
+    precipitationScope,
+  ]);
 
   const handlePrecipitationScopeChange = (scope: PrecipitationScope) => {
     setPrecipitationScope(scope);
@@ -542,7 +552,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
             setDrawnPolygon((currentPoints) => [...currentPoints, point]);
           }}
         />
-        <LayersControl position="topright">
+        <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="OpenStreetMap">
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
