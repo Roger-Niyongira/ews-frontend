@@ -380,10 +380,11 @@ const MapPanel: React.FC<MapPanelProps> = ({
                   key={layer.id}
                   data={layer.geojsonData as GeoJSON.GeoJsonObject}
                   style={() => ({
-                    color: "#f39c12",
-                    weight: 2,
-                    opacity: 0.9,
-                    fillOpacity: 0.08,
+                    color: "#0d6efd",
+                    weight: 3,
+                    opacity: 1,
+                    fillColor: "#9be7ff",
+                    fillOpacity: 0.3,
                   })}
                   onEachFeature={(feature, leafletLayer) => {
                     const { name, areaKm2 } = getWatershedFeatureSummary(

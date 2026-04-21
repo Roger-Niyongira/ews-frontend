@@ -8,6 +8,7 @@ import Body from "./components/Dashboard/Body";
 import AboutPage from "./components/AboutPage";
 import LoginPage from "./components/LoginPage";
 import ContactPage from "./components/ContactPage";
+import PlanningPage from "./components/PlanningPage";
 import ProjectListModal, { UserProject } from "./components/ProjectListModal";
 import SettingsModal from "./components/SettingsModal";
 import "./App.css";
@@ -65,12 +66,17 @@ function App() {
     projectWatersheds.length > 0 && selectedProject ? "private" : "none";
   const userCanAccessWatersheds =
     Boolean(selectedProject) && projectWatersheds.length > 0;
+  const dashboardFloodRasterAvailable =
+    floodMapStatus !== "none" &&
+    (floodMapStatus === "public" || userCanAccessFloodMap);
 
   useEffect(() => {
     if (location.pathname === "/about") {
       document.title = "EWS | About";
     } else if (location.pathname === "/contact") {
       document.title = "EWS | Contact";
+    } else if (location.pathname === "/planning") {
+      document.title = "EWS | Planning Tool";
     } else if (location.pathname === "/preference") {
       document.title = "EWS | Preference";
     } else {
@@ -276,6 +282,16 @@ function App() {
             />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route
+              path="/planning"
+              element={
+                <PlanningPage
+                  projectName={selectedProject?.name ?? null}
+                  dashboardWatersheds={projectWatersheds}
+                  dashboardFloodRasterAvailable={dashboardFloodRasterAvailable}
+                />
+              }
+            />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </div>

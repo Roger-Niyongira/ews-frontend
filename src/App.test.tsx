@@ -1,4 +1,5 @@
 jest.mock('./components/Dashboard/Body', () => () => <div>Mock Body</div>);
+jest.mock('./components/PlanningPage', () => () => <div>Mock Planning Page</div>);
 
 import React from 'react';
 import axios from 'axios';

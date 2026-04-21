@@ -24,7 +24,10 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isDashboard = location.pathname === "/dashboard" || location.pathname === "/";
+  const isFullWidthPage =
+    location.pathname === "/dashboard" ||
+    location.pathname === "/" ||
+    location.pathname === "/planning";
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -35,7 +38,7 @@ const Navbar: React.FC<NavbarProps> = ({
       className="navbar navbar-expand-lg navbar-dark"
       style={{ backgroundColor: "#2196f3" }}
     >
-      <div className={isDashboard ? "container-fluid px-4" : "container"}>
+      <div className={isFullWidthPage ? "container-fluid px-4" : "container"}>
         <a className="navbar-brand" href="/">
           <img
             src={process.env.PUBLIC_URL + "/ews_icon.png"}
@@ -93,6 +96,15 @@ const Navbar: React.FC<NavbarProps> = ({
               >
                 Instructions
               </button>
+            </li>
+            <li className="nav-item">
+              <Link
+                className="nav-link text-white fw-bold"
+                to="/planning"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Planning Tool
+              </Link>
             </li>
           </ul>
 
