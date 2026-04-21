@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   MapContainer,
   TileLayer,
   GeoJSON,
   CircleMarker,
+  LayersControl,
+  Polygon,
   Tooltip,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -41,6 +44,10 @@ interface WatershedFeatureSummary {
   feature: GeoJSON.Feature | null;
 }
 
+type PrecipitationScope = "all" | "watersheds" | "polygon";
+type LatLngTuple = [number, number];
+type LngLatTuple = [number, number];
+
 const Legend: React.FC = () => {
   const map = useMap();
 
@@ -74,6 +81,114 @@ const Legend: React.FC = () => {
   return null;
 };
 
+const isPointInRing = (point: LngLatTuple, ring: number[][]): boolean => {
+  const [lng, lat] = point;
+  let inside = false;
+
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [lngI, latI] = ring[i];
+    const [lngJ, latJ] = ring[j];
+    const intersects =
+      latI > lat !== latJ > lat &&
+      lng < ((lngJ - lngI) * (lat - latI)) / (latJ - latI) + lngI;
+
+    if (intersects) {
+      inside = !inside;
+    }
+  }
+
+  return inside;
+};
+
+const isPointInPolygonCoordinates = (
+  point: LngLatTuple,
+  coordinates: number[][][]
+): boolean => {
+  const [outerRing, ...holes] = coordinates;
+
+  if (!outerRing || !isPointInRing(point, outerRing)) {
+    return false;
+  }
+
+  return !holes.some((hole) => isPointInRing(point, hole));
+};
+
+const isPointInGeoJsonGeometry = (
+  point: LngLatTuple,
+  geometry: GeoJSON.Geometry | null
+): boolean => {
+  if (!geometry) {
+    return false;
+  }
+
+  if (geometry.type === "Polygon") {
+    return isPointInPolygonCoordinates(point, geometry.coordinates as number[][][]);
+  }
+
+  if (geometry.type === "MultiPolygon") {
+    return (geometry.coordinates as number[][][][]).some((polygon) =>
+      isPointInPolygonCoordinates(point, polygon)
+    );
+  }
+
+  if (geometry.type === "GeometryCollection") {
+    return geometry.geometries.some((childGeometry) =>
+      isPointInGeoJsonGeometry(point, childGeometry)
+    );
+  }
+
+  return false;
+};
+
+const isPointInGeoJsonObject = (
+  point: LngLatTuple,
+  geojson: GeoJSON.GeoJsonObject | null
+): boolean => {
+  if (!geojson) {
+    return false;
+  }
+
+  if (geojson.type === "Feature") {
+    return isPointInGeoJsonGeometry(point, (geojson as GeoJSON.Feature).geometry);
+  }
+
+  if (geojson.type === "FeatureCollection") {
+    return (geojson as GeoJSON.FeatureCollection).features.some((feature) =>
+      isPointInGeoJsonGeometry(point, feature.geometry)
+    );
+  }
+
+  return isPointInGeoJsonGeometry(point, geojson as GeoJSON.Geometry);
+};
+
+const DrawPolygonClickHandler: React.FC<{
+  enabled: boolean;
+  onPointAdd: (point: LatLngTuple) => void;
+}> = ({ enabled, onPointAdd }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    container.style.cursor = enabled ? "crosshair" : "";
+
+    return () => {
+      container.style.cursor = "";
+    };
+  }, [enabled, map]);
+
+  useMapEvents({
+    click(event) {
+      if (!enabled) {
+        return;
+      }
+
+      onPointAdd([event.latlng.lat, event.latlng.lng]);
+    },
+  });
+
+  return null;
+};
+
 const MapPanel: React.FC<MapPanelProps> = ({
   cities,
   thresholds,
@@ -90,7 +205,12 @@ const MapPanel: React.FC<MapPanelProps> = ({
   const [climateZones, setClimateZones] = useState<any>(null);
   const [isProjectLayersCollapsed, setIsProjectLayersCollapsed] = useState(false);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+  const [precipitationScope, setPrecipitationScope] =
+    useState<PrecipitationScope>("watersheds");
+  const [drawnPolygon, setDrawnPolygon] = useState<LatLngTuple[]>([]);
+  const [isDrawnPolygonFinished, setIsDrawnPolygonFinished] = useState(false);
   const availableWatersheds = projectWatersheds.filter((layer) => layer.geojsonData);
+  const canUseWatershedScope = availableWatersheds.length > 0;
 
   const getWatershedFeatureSummary = (
     feature: GeoJSON.Feature,
@@ -197,6 +317,33 @@ const MapPanel: React.FC<MapPanelProps> = ({
     }
   };
 
+  const visibleCities = useMemo(() => {
+    if (precipitationScope === "watersheds") {
+      return cities.filter((city) =>
+        availableWatersheds.some((layer) =>
+          isPointInGeoJsonObject(city.location, layer.geojsonData)
+        )
+      );
+    }
+
+    if (precipitationScope === "polygon" && drawnPolygon.length >= 3) {
+      const polygonRing = drawnPolygon.map(([lat, lng]) => [lng, lat]);
+
+      return cities.filter((city) => isPointInRing(city.location, polygonRing));
+    }
+
+    return cities;
+  }, [availableWatersheds, cities, drawnPolygon, precipitationScope]);
+
+  const handlePrecipitationScopeChange = (scope: PrecipitationScope) => {
+    setPrecipitationScope(scope);
+
+    if (scope !== "polygon") {
+      setDrawnPolygon([]);
+      setIsDrawnPolygonFinished(false);
+    }
+  };
+
   return (
     <div className="w-100 h-100 position-relative">
       {projectName && (projectWatersheds.length > 0 || showFloodMap) && (
@@ -212,12 +359,17 @@ const MapPanel: React.FC<MapPanelProps> = ({
             maxWidth: "min(440px, calc(100% - 24px))",
             maxHeight: isProjectLayersCollapsed ? "none" : "min(70vh, calc(100% - 24px))",
             overflowY: isProjectLayersCollapsed ? "visible" : "auto",
-            padding: "0.9rem",
             backgroundColor: "#2f343a",
             color: "#f8f9fa",
           }}
         >
-          <div className="d-flex align-items-start justify-content-between gap-3 mb-3">
+          <div
+            className="d-flex align-items-start justify-content-between gap-3"
+            style={{
+              backgroundColor: "#3a4047",
+              padding: "0.75rem",
+            }}
+          >
             <div>
               <div className="fw-bold">Project Layers</div>
               <div className="small" style={{ color: "#c7ced6" }}>
@@ -234,7 +386,93 @@ const MapPanel: React.FC<MapPanelProps> = ({
           </div>
 
           {!isProjectLayersCollapsed && (
-            <>
+            <div style={{ padding: "0.9rem" }}>
+              <div className="mb-2 pb-2" style={{ borderBottom: "1px solid #5a646f" }}>
+                <div className="fw-semibold mb-2">Precipitations</div>
+                <div className="d-flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${
+                      precipitationScope === "all"
+                        ? "btn-info"
+                        : "btn-outline-light"
+                    }`}
+                    onClick={() => handlePrecipitationScopeChange("all")}
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${
+                      precipitationScope === "watersheds"
+                        ? "btn-info"
+                        : "btn-outline-light"
+                    }`}
+                    disabled={!canUseWatershedScope}
+                    onClick={() => handlePrecipitationScopeChange("watersheds")}
+                  >
+                    Within Watersheds
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn btn-sm ${
+                      precipitationScope === "polygon"
+                        ? "btn-info"
+                      : "btn-outline-light"
+                    }`}
+                    onClick={() => handlePrecipitationScopeChange("polygon")}
+                  >
+                    Draw on map
+                  </button>
+                </div>
+                {precipitationScope === "polygon" && (
+                  <div className="mt-2">
+                    <div className="small mb-2" style={{ color: "#c7ced6" }}>
+                      Click the map to add polygon points. Markers filter after 3
+                      points.
+                    </div>
+                    <div className="d-flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-info"
+                        disabled={drawnPolygon.length < 3}
+                        onClick={() => setIsDrawnPolygonFinished(true)}
+                      >
+                        Finish
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-light"
+                        disabled={drawnPolygon.length === 0}
+                        onClick={() => {
+                          setIsDrawnPolygonFinished(false);
+                          setDrawnPolygon((points) => points.slice(0, -1));
+                        }}
+                      >
+                        Undo point
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-light"
+                        disabled={drawnPolygon.length === 0}
+                        onClick={() => {
+                          setIsDrawnPolygonFinished(false);
+                          setDrawnPolygon([]);
+                        }}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {!canUseWatershedScope && (
+                  <div className="small mt-2" style={{ color: "#c7ced6" }}>
+                    Project watershed precipitation will be available once a watershed
+                    geometry is loaded.
+                  </div>
+                )}
+              </div>
+
               {projectWatersheds.length > 0 && (
                 <div className="mb-3">
                   <div className="fw-semibold mb-2">Watersheds</div>
@@ -285,21 +523,41 @@ const MapPanel: React.FC<MapPanelProps> = ({
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
 
       <MapContainer
+        className="dashboard-precip-map"
         center={center}
         zoom={zoom}
         style={style ?? { width: "100%", height: "100%" }}
       >
         <MapReadyBridge onReady={setMapInstance} />
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        <DrawPolygonClickHandler
+          enabled={precipitationScope === "polygon"}
+          onPointAdd={(point) => {
+            setIsDrawnPolygonFinished(false);
+            setDrawnPolygon((currentPoints) => [...currentPoints, point]);
+          }}
         />
+        <LayersControl position="topright">
+          <LayersControl.BaseLayer checked name="OpenStreetMap">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+          </LayersControl.BaseLayer>
+
+          <LayersControl.BaseLayer name="Google Hybrid">
+            <TileLayer
+              attribution="Imagery © Google"
+              url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
+              subdomains={["mt0", "mt1", "mt2", "mt3"]}
+            />
+          </LayersControl.BaseLayer>
+        </LayersControl>
         <Legend />
 
         {showClimateZones && climateZones && (
@@ -343,7 +601,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
         )}
 
         {showPrecipitations &&
-          cities.map((city) => {
+          visibleCities.map((city) => {
             if (city.warning_level === "no_data") {
               return null;
             }
@@ -371,6 +629,21 @@ const MapPanel: React.FC<MapPanelProps> = ({
               </CircleMarker>
             );
           })}
+
+        {precipitationScope === "polygon" &&
+          drawnPolygon.length > 0 &&
+          !isDrawnPolygonFinished && (
+          <Polygon
+            positions={drawnPolygon}
+            pathOptions={{
+              color: "#0dcaf0",
+              weight: 3,
+              opacity: 1,
+              fillColor: "#9be7ff",
+              fillOpacity: 0.18,
+            }}
+          />
+        )}
 
         {showWatersheds &&
           availableWatersheds.map(
