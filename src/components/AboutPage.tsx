@@ -1,128 +1,179 @@
 import React from "react";
 
+const facts = [
+  {
+    label: "Weather-related risk",
+    text: "Half of all recorded disasters over a 50-year period were weather-related.",
+    href: "https://wmo.int/topics/early-warning-system",
+  },
+  {
+    label: "Earlier warnings matter",
+    text: "Disaster damage can be reduced by 30% with a 24-hour early warning.",
+    href: "https://wmo.int/topics/early-warning-system",
+  },
+  {
+    label: "Avoided losses",
+    text: "Early warning systems can help avoid US $3-16 billion per year of losses globally.",
+    href: "https://wmo.int/topics/early-warning-system",
+  },
+];
+
+const pillars = [
+  "Disaster risk knowledge and management",
+  "Detection, observation, monitoring, analysis, and forecasting",
+  "Warning dissemination and communication",
+  "Preparedness and response capabilities",
+];
+
 const AboutPage = () => {
   return (
-    <div className="container py-3 ">
-      {/* Sidebar-style Section */}
-      <div className="row mb-4">
-        <div className="col-md-3">
-          <div className="bg-light p-5 m border rounded">
-            <h4 className="fw-bold text-dark">Did You Know?</h4>
-            <ul className="list-unstyled ps-2">
-              <li className="mb-2">
-                🕐{" "}
-                <a
-                  href="https://wmo.int/topics/early-warning-system"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Half of all recorded disasters over a 50-year period were
-                  weather-related.
-                </a>
-              </li>
-              <li className="mb-2">
-                📢{" "}
-                <a
-                  href="https://wmo.int/topics/early-warning-system"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Disaster damage can be reduced by 30% with a 24-hour early
-                  warning.
-                </a>
-              </li>
-              <li className="mb-2">
-                🌍{" "}
-                <a
-                  href="https://wmo.int/topics/early-warning-system"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  An early warning system can help avoid US $3–16 billion per
-                  year of losses globally.
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Main content */}
-        <div className="col-md-9">
-          <h1 className="text-center fw-bold">
-            Welcome to the Early Warning System (EWS) Page
-          </h1>
-
-          <div className="mt-4">
-            <h2 className="text-primary">About the Project</h2>
-            <p>
-              Natural hazards such as floods, droughts, and hurricanes are
-              becoming increasingly frequent and intense due to climate change.
-              These hazards cause devastating impacts on lives,
-              infrastructure, and economies, especially in developing countries
-              and communities, thus resulting in natural disasters. Our goal is to reduce disaster risks
-              with an effective <strong>Early Warning System (EWS)</strong>,
-              designed based on the United Nations'{" "}
-              <a
-                href="https://www.un.org/en/climatechange/early-warnings-for-all"
-                target="_blank"
-                rel="noopener noreferrer"
+    <div className="w-100" style={{ backgroundColor: "#f4f7f9", minHeight: "100%" }}>
+      <div
+        className="container-fluid py-4 py-lg-5 mx-auto"
+        style={{ maxWidth: "1180px" }}
+      >
+        <section
+          className="rounded-4 p-4 p-lg-5 mb-4"
+          style={{
+            background:
+              "linear-gradient(135deg, #102332 0%, #174863 55%, #1f7a8c 100%)",
+            color: "#ffffff",
+          }}
+        >
+          <div className="row g-4 align-items-center">
+            <div className="col-lg-8">
+              <div className="text-uppercase fw-semibold small mb-2">
+                Early Warning System
+              </div>
+              <h1 className="fw-bold mb-3">About the Early Warning System</h1>
+              <p className="lead mb-0" style={{ maxWidth: "760px" }}>
+                The EWS helps communities and decision-makers monitor climate and
+                flood risks, understand exposure, and prepare earlier for
+                hazardous events.
+              </p>
+            </div>
+            <div className="col-lg-4">
+              <div
+                className="rounded-4 p-3 h-100"
+                style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
               >
-                Four Pillars of Early Warnings for All
-              </a>
-              : disaster risk knowledge and management, detection, observation,
-              monitoring, analysis, and forecasting, warning dissemination and
-              communication, preparedness and response capabilities.
-            </p>
-          </div>
-
-          {/* Bootstrap Grid for Content */}
-          <div className="row mt-4 align-items-start">
-            {/* Left Column */}
-            <div className="col-md-6">
-              <p>
-                Our Early Warning System is being developed to empower
-                communities with timely alerts and critical information during
-                emergencies. By harnessing the power of real-time data, our
-                system aims to provide early notifications for natural disasters
-                related to flooding and drought.
-              </p>
-              <p>
-                This initiative is not only designed to inform but also to guide
-                communities on how to prepare and respond effectively during
-                emergencies. With user-friendly dashboards and decision-support
-                tools, our EWS serves to enhance community resilience and
-                safety.
-              </p>
-
-              <div className="text-center">
-                <img
-                  src={process.env.PUBLIC_URL + "/flood_Tchad.png"}
-                  alt="Flood Djamena"
-                  className="img-fluid"
-                />
-                <div className="text-muted mt-2" style={{ fontSize: "16px" }}>
-                  2022 Flood Event in Djamena, Tchad (
-                  <a
-                    href="https://news.un.org/en/story/2022/08/1125562"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Source: United Nations
-                  </a>
-                  )
+                <div className="fw-semibold mb-2">Focus areas</div>
+                <div className="d-flex flex-nowrap gap-2">
+                  <span className="badge text-bg-light">Flooding</span>
+                  <span className="badge text-bg-light">Drought</span>
+                  <span className="badge text-bg-light">Risk planning</span>
                 </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Right Column */}
-            <div className="col-md-6 text-center">
+        <section className="row g-3 mb-4">
+          {facts.map((fact) => (
+            <div className="col-md-4" key={fact.label}>
+              <a
+                className="d-block h-100 text-decoration-none text-dark"
+                href={fact.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className="h-100 bg-white border rounded-4 p-3 shadow-sm">
+                  <div className="fw-bold mb-2">{fact.label}</div>
+                  <p className="mb-0 text-muted">{fact.text}</p>
+                </div>
+              </a>
+            </div>
+          ))}
+        </section>
+
+        <section className="row g-4 align-items-start mb-4">
+          <div className="col-lg-7">
+            <div className="bg-white border rounded-4 p-4 shadow-sm h-100">
+              <h2 className="h4 fw-bold mb-3">Why this project exists</h2>
+              <p>
+                Natural hazards such as floods, droughts, and hurricanes are becoming
+                more frequent and intense under climate change. These hazards can
+                severely affect lives, infrastructure, and local economies, especially
+                in developing countries and vulnerable communities.
+              </p>
+              <p>
+                This platform is being developed to support timely alerts,
+                risk-informed planning, and practical decision support before and
+                during emergency conditions.
+              </p>
+              <p className="mb-0">
+                The work is informed by the United Nations&apos;{" "}
+                <a
+                  href="https://www.un.org/en/climatechange/early-warnings-for-all"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Early Warnings for All
+                </a>{" "}
+                initiative and its four-pillar framework.
+              </p>
+            </div>
+          </div>
+
+          <div className="col-lg-5">
+            <div className="bg-white border rounded-4 p-4 shadow-sm h-100">
+              <h2 className="h4 fw-bold mb-3">Four pillars</h2>
+              <div className="d-flex flex-column gap-2">
+                {pillars.map((pillar, index) => (
+                  <div
+                    className="d-flex gap-3 rounded-3 p-3"
+                    style={{ backgroundColor: "#f4f7f9" }}
+                    key={pillar}
+                  >
+                    <div
+                      className="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        backgroundColor: "#1f7a8c",
+                      }}
+                    >
+                      {index + 1}
+                    </div>
+                    <div>{pillar}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="row g-4">
+          <div className="col-lg-6">
+            <figure className="bg-white border rounded-4 p-3 shadow-sm h-100 mb-0">
+              <img
+                src={process.env.PUBLIC_URL + "/flood_Tchad.png"}
+                alt="Flood event in Djamena, Chad"
+                className="img-fluid rounded-3"
+              />
+              <figcaption className="text-muted mt-3 mb-0">
+                2022 flood event in Djamena, Chad (
+                <a
+                  href="https://news.un.org/en/story/2022/08/1125562"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Source: United Nations
+                </a>
+                )
+              </figcaption>
+            </figure>
+          </div>
+
+          <div className="col-lg-6">
+            <figure className="bg-white border rounded-4 p-3 shadow-sm h-100 mb-0">
               <img
                 src={process.env.PUBLIC_URL + "/UN_pillars_for_ews.png"}
-                alt="United Nations' EWS Pillars"
-                className="img-fluid"
+                alt="United Nations early warning system pillars"
+                className="img-fluid rounded-3"
               />
-              <div className="text-muted mt-2" style={{ fontSize: "16px" }}>
-                The Four Pillars of an Effective EWS (
+              <figcaption className="text-muted mt-3 mb-0">
+                The four pillars of an effective EWS (
                 <a
                   href="https://www.un.org/en/climatechange/early-warnings-for-all"
                   target="_blank"
@@ -131,10 +182,10 @@ const AboutPage = () => {
                   Source: United Nations
                 </a>
                 )
-              </div>
-            </div>
+              </figcaption>
+            </figure>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
