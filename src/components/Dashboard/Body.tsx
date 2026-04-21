@@ -15,6 +15,7 @@ interface BodyProps {
   projectName: string | null;
   projectWatersheds: ProjectGeoJsonLayer[];
   thresholds: ClimateThresholds;
+  onPrecipitationAvailabilityChange: (available: boolean) => void;
 }
 const Body: React.FC<BodyProps> = ({
   showClimateZones,
@@ -24,6 +25,7 @@ const Body: React.FC<BodyProps> = ({
   projectName,
   projectWatersheds,
   thresholds,
+  onPrecipitationAvailabilityChange,
 }) => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
@@ -38,9 +40,15 @@ const Body: React.FC<BodyProps> = ({
   useEffect(() => {
     axios
       .get<City[]>(`${API_BASE_URL}/api/cities/`)
-      .then((res) => setCities(res.data))
-      .catch(() => setCities([]));
-  }, [API_BASE_URL]);
+      .then((res) => {
+        setCities(res.data);
+        onPrecipitationAvailabilityChange(res.data.length > 0);
+      })
+      .catch(() => {
+        setCities([]);
+        onPrecipitationAvailabilityChange(false);
+      });
+  }, [API_BASE_URL, onPrecipitationAvailabilityChange]);
 
   const handleCityClick = (cityId: number) => {
     setSelectedCityId(cityId);

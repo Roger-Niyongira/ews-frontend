@@ -64,13 +64,17 @@ const Navbar: React.FC<NavbarProps> = ({
         >
           <ul className="navbar-nav">
             <li className="nav-item">
-              <Link className="nav-link text-white fw-bold" to="/about">
-                About
+              <Link className="nav-link text-white fw-bold" to="/">
+                Dashboard
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link text-white fw-bold" to="/">
-                Dashboard
+              <Link
+                className="nav-link text-white fw-bold"
+                to="/planning"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Planning Tool
               </Link>
             </li>
             <li className="nav-item">
@@ -98,12 +102,8 @@ const Navbar: React.FC<NavbarProps> = ({
               </button>
             </li>
             <li className="nav-item">
-              <Link
-                className="nav-link text-white fw-bold"
-                to="/planning"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Planning Tool
+              <Link className="nav-link text-white fw-bold" to="/about">
+                About
               </Link>
             </li>
           </ul>

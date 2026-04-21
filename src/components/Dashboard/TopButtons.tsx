@@ -19,6 +19,7 @@ interface TopButtonsProps {
   userCanAccessFloodMap: boolean;
   watershedStatus: "public" | "private" | "none";
   userCanAccessWatersheds: boolean;
+  precipitationAvailable: boolean;
   onLoginClick: () => void;
 }
 
@@ -39,6 +40,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   userCanAccessFloodMap,
   watershedStatus,
   userCanAccessWatersheds,
+  precipitationAvailable,
   onLoginClick,
 }) => {
   const isMobile = window.innerWidth <= 768;
@@ -112,6 +114,15 @@ const TopButtons: React.FC<TopButtonsProps> = ({
     });
   };
 
+  const showPrecipitationUnavailableMessage = () => {
+    Swal.fire({
+      icon: "info",
+      title: "Precipitations unavailable",
+      text: "Precipitation data could not be loaded. Our servers might be updating. Please try again later.",
+      confirmButtonText: "Close",
+    });
+  };
+
   const renderButtons = () => (
     <>
       {currentProjectName && (
@@ -182,7 +193,14 @@ const TopButtons: React.FC<TopButtonsProps> = ({
         <button
           className={`btn ${showPrecipitations ? "btn-warning" : "btn-info"} fw-bold w-100`}
           style={buttonStyle}
-          onClick={() => setShowPrecipitations((v) => !v)}
+          onClick={() => {
+            if (!precipitationAvailable) {
+              showPrecipitationUnavailableMessage();
+              return;
+            }
+
+            setShowPrecipitations((v) => !v);
+          }}
         >
           {showPrecipitations ? "HIDE PRECIPITATIONS" : "SHOW PRECIPITATIONS"}
         </button>
@@ -266,6 +284,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
                 as="button"
                 onClick={() => {
                   setShowInfoMenu(false);
+                  if (!precipitationAvailable) {
+                    showPrecipitationUnavailableMessage();
+                    return;
+                  }
+
                   setShowPrecipitations((v) => !v);
                 }}
               >

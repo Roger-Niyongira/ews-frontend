@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { GeoJSON, LayersControl, MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import Swal from "sweetalert2";
 import type { ProjectGeoJsonLayer } from "../App";
 
 interface PlanningPageProps {
@@ -33,6 +32,7 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
   });
   const [advancedDetails, setAdvancedDetails] = useState("");
   const [isAdvancedPlanningOpen, setIsAdvancedPlanningOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
 
   const availableDashboardWatersheds = useMemo(
     () => dashboardWatersheds.filter((layer) => layer.geojsonData),
@@ -68,7 +68,7 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
           <div className="col-12 col-lg-4 col-xl-3">
             <div className="card shadow-sm h-100">
               <div className="card-body d-flex flex-column gap-4 overflow-auto">
-                <div>
+                <div className="position-relative">
                   <div
                     className="d-flex align-items-center justify-content-between gap-2 bg-dark text-white rounded px-3"
                     style={{ minHeight: "48px" }}
@@ -84,18 +84,47 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                         backgroundColor: "#0d6efd",
                       }}
                       aria-label="Planning tool information"
-                      onClick={() => {
-                        Swal.fire({
-                          icon: "info",
-                          title: "Planning Tool Information",
-                          html: "Planning tool information will be added here.",
-                          confirmButtonText: "Close",
-                        });
-                      }}
+                      aria-expanded={isInfoOpen}
+                      aria-controls="spatialAnalysisInfo"
+                      onClick={() => setIsInfoOpen((isOpen) => !isOpen)}
                     >
                       i
                     </button>
                   </div>
+                  {isInfoOpen && (
+                    <div
+                      id="spatialAnalysisInfo"
+                      className="small text-muted border rounded p-2 shadow-sm"
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 6px)",
+                        left: 0,
+                        right: 0,
+                        zIndex: 1050,
+                        backgroundColor: "#f1f3f5",
+                        borderColor: "#ced4da",
+                      }}
+                    >
+                      <p className="mb-2">
+                        You can load your own watershed or import the watershed already
+                        available from the dashboard.
+                      </p>
+                      <p className="mb-2">
+                        Accepted watershed and infrastructure formats include GPKG,
+                        GeoJSON, JSON, and CSV. Flood rasters can be loaded as TIF, TIFF,
+                        or IMG files.
+                      </p>
+                      <p className="mb-2">
+                        Get Summary gives an estimate of exposure for your selected
+                        analysis inputs.
+                      </p>
+                      <p className="mb-0">
+                        Advanced planning can be available upon request. Select the
+                        services you need and use the details box to describe your request,
+                        assumptions, location, and expected output.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <section>

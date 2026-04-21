@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import axios from "axios";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import InstructionPanel from "./components/InstructionPanel";
@@ -41,7 +41,8 @@ function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [showClimateZones, setShowClimateZones] = useState(false);
-  const [showPrecipitations, setShowPrecipitations] = useState(true);
+  const [showPrecipitations, setShowPrecipitations] = useState(false);
+  const [precipitationAvailable, setPrecipitationAvailable] = useState(false);
   const [showWatersheds, setShowWatersheds] = useState(false);
   const location = useLocation();
   const isDashboard = location.pathname === "/dashboard";
@@ -190,6 +191,11 @@ function App() {
     setShowSettings(false);
   };
 
+  const handlePrecipitationAvailabilityChange = useCallback((available: boolean) => {
+    setPrecipitationAvailable(available);
+    setShowPrecipitations(available);
+  }, []);
+
   const handleLoginSuccess = (payload: {
     username: string;
     accessToken: string;
@@ -259,6 +265,7 @@ function App() {
             userCanAccessFloodMap={userCanAccessFloodMap}
             watershedStatus={watershedStatus}
             userCanAccessWatersheds={userCanAccessWatersheds}
+            precipitationAvailable={precipitationAvailable}
             onLoginClick={() => setShowLogin(true)}
           />
         )}
@@ -277,6 +284,9 @@ function App() {
                   projectWatersheds={projectWatersheds}
                   showWatersheds={showWatersheds}
                   thresholds={thresholds}
+                  onPrecipitationAvailabilityChange={
+                    handlePrecipitationAvailabilityChange
+                  }
                 />
               }
             />
