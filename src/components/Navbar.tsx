@@ -10,6 +10,7 @@ interface NavbarProps {
   onProjectsClick: () => void;
   onLogout: () => void;
   currentUsername: string | null;
+  currentDisplayName: string | null;
   currentProjectName: string | null;
 }
 
@@ -20,6 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({
   onProjectsClick,
   onLogout,
   currentUsername,
+  currentDisplayName,
   currentProjectName,
 }) => {
   const location = useLocation();
@@ -122,7 +124,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 className="btn btn-link text-white fw-bold"
                 style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
               >
-                {currentUsername}
+                {currentDisplayName ?? currentUsername}
               </Dropdown.Toggle>
               <Dropdown.Menu>
                 <Dropdown.Item

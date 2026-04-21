@@ -4,10 +4,18 @@ type Props = {
   onClose: () => void;
   onLoginSuccess: (payload: {
     username: string;
+    firstName: string;
+    lastName: string;
     accessToken: string;
     refreshToken: string;
   }) => void;
 };
+
+interface CurrentUserResponse {
+  username: string;
+  first_name?: string;
+  last_name?: string;
+}
 
 const LoginPage: React.FC<Props> = ({ onClose, onLoginSuccess }) => {
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
@@ -31,8 +39,34 @@ const LoginPage: React.FC<Props> = ({ onClose, onLoginSuccess }) => {
       const data = await res.json();
 
       if (res.ok) {
-        onLoginSuccess({
+        let currentUser: CurrentUserResponse = {
           username,
+          first_name: "",
+          last_name: "",
+        };
+
+        try {
+          const userRes = await fetch(`${API_BASE_URL}/api/me/`, {
+            headers: {
+              Authorization: `Bearer ${data.access}`,
+            },
+          });
+
+          if (userRes.ok) {
+            currentUser = await userRes.json();
+          }
+        } catch {
+          currentUser = {
+            username,
+            first_name: "",
+            last_name: "",
+          };
+        }
+
+        onLoginSuccess({
+          username: currentUser.username || username,
+          firstName: currentUser.first_name || "",
+          lastName: currentUser.last_name || "",
           accessToken: data.access,
           refreshToken: data.refresh,
         });

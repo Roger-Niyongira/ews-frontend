@@ -55,6 +55,12 @@ function App() {
   const [currentUsername, setCurrentUsername] = useState<string | null>(() =>
     localStorage.getItem("ews_username")
   );
+  const [currentFirstName, setCurrentFirstName] = useState<string | null>(() =>
+    localStorage.getItem("ews_first_name")
+  );
+  const [currentLastName, setCurrentLastName] = useState<string | null>(() =>
+    localStorage.getItem("ews_last_name")
+  );
   const [accessToken, setAccessToken] = useState<string | null>(() =>
     localStorage.getItem("ews_access_token")
   );
@@ -116,10 +122,14 @@ function App() {
       })
       .catch(() => {
         localStorage.removeItem("ews_username");
+        localStorage.removeItem("ews_first_name");
+        localStorage.removeItem("ews_last_name");
         localStorage.removeItem("ews_access_token");
         localStorage.removeItem("ews_refresh_token");
         localStorage.removeItem("ews_selected_project");
         setCurrentUsername(null);
+        setCurrentFirstName(null);
+        setCurrentLastName(null);
         setAccessToken(null);
         setRefreshToken(null);
         setProjects([]);
@@ -198,13 +208,19 @@ function App() {
 
   const handleLoginSuccess = (payload: {
     username: string;
+    firstName: string;
+    lastName: string;
     accessToken: string;
     refreshToken: string;
   }) => {
     setCurrentUsername(payload.username);
+    setCurrentFirstName(payload.firstName);
+    setCurrentLastName(payload.lastName);
     setAccessToken(payload.accessToken);
     setRefreshToken(payload.refreshToken);
     localStorage.setItem("ews_username", payload.username);
+    localStorage.setItem("ews_first_name", payload.firstName);
+    localStorage.setItem("ews_last_name", payload.lastName);
     localStorage.setItem("ews_access_token", payload.accessToken);
     localStorage.setItem("ews_refresh_token", payload.refreshToken);
     setShowProjects(true);
@@ -218,10 +234,14 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("ews_username");
+    localStorage.removeItem("ews_first_name");
+    localStorage.removeItem("ews_last_name");
     localStorage.removeItem("ews_access_token");
     localStorage.removeItem("ews_refresh_token");
     localStorage.removeItem("ews_selected_project");
     setCurrentUsername(null);
+    setCurrentFirstName(null);
+    setCurrentLastName(null);
     setAccessToken(null);
     setRefreshToken(null);
     setProjects([]);
@@ -238,6 +258,7 @@ function App() {
         onProjectsClick={() => setShowProjects(true)}
         onLogout={handleLogout}
         currentUsername={currentUsername}
+        currentDisplayName={currentFirstName || currentLastName || currentUsername}
         currentProjectName={selectedProject?.name ?? null}
       />
 
