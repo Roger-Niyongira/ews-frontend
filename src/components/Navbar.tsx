@@ -109,7 +109,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </ul>
 
           <Link
-            className="nav-link text-white fw-bold ms-lg-auto me-lg-2 mt-2 mt-lg-0"
+            className="nav-link text-white fw-bold ms-lg-auto me-lg-3 mt-2 mt-lg-0"
             to="/contact"
             onClick={() => setIsMenuOpen(false)}
           >
@@ -117,7 +117,7 @@ const Navbar: React.FC<NavbarProps> = ({
           </Link>
 
           {currentUsername ? (
-            <Dropdown align="end" className="me-lg-2 mt-2 mt-lg-0">
+            <Dropdown align="end" className="me-lg-3 mt-2 mt-lg-0">
               <Dropdown.Toggle
                 className="btn btn-link text-white fw-bold"
                 style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
@@ -147,7 +147,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </Dropdown>
           ) : (
             <button
-              className="nav-link btn btn-link text-white fw-bold me-lg-2 mt-2 mt-lg-0 text-start"
+              className="nav-link btn btn-link text-white fw-bold me-lg-3 mt-2 mt-lg-0 text-start"
               style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
               onClick={() => {
                 setIsMenuOpen(false);
