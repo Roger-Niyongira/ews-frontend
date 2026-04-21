@@ -28,6 +28,12 @@
   color: #61dafb;
 }
 
+.bg-dark .dropdown-item.text-light:hover,
+.bg-dark .dropdown-item.text-light:focus {
+  background-color: #495057;
+  color: #ffffff;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);

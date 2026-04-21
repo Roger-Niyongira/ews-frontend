@@ -243,18 +243,22 @@ const TopButtons: React.FC<TopButtonsProps> = ({
       {isMobile && showInfoMenu && (
         <div
           id="dashboardInfoMenu"
-          className="position-absolute bg-white border rounded shadow-sm py-1"
+          className={`position-absolute border rounded shadow-sm py-1 ${
+            darkMode ? "bg-dark border-secondary" : "bg-white"
+          }`}
           style={{ zIndex: 1080, top: "100%", left: "0.75rem", minWidth: 230 }}
         >
           {currentProjectName && (
-            <div className="px-3 py-2 text-muted small">
+            <div className={`px-3 py-2 small ${darkMode ? "text-light" : "text-muted"}`}>
               PROJECT: {currentProjectName}
             </div>
           )}
-          <div className="px-3 py-2 text-muted small">LAST UPDATE: Loading...</div>
+          <div className={`px-3 py-2 small ${darkMode ? "text-light" : "text-muted"}`}>
+            LAST UPDATE: Loading...
+          </div>
           <button
             type="button"
-            className="dropdown-item"
+            className={`dropdown-item ${darkMode ? "text-light" : ""}`}
             onClick={() => {
               setShowInfoMenu(false);
               setShowClimateZones((v) => !v);
@@ -264,7 +268,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           </button>
           <button
             type="button"
-            className="dropdown-item"
+            className={`dropdown-item ${darkMode ? "text-light" : ""}`}
             onClick={() => {
               setShowInfoMenu(false);
               if (floodMapStatus === "none") {
@@ -284,7 +288,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           </button>
           <button
             type="button"
-            className="dropdown-item"
+            className={`dropdown-item ${darkMode ? "text-light" : ""}`}
             onClick={() => {
               setShowInfoMenu(false);
               if (!precipitationAvailable) {
@@ -299,7 +303,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           </button>
           <button
             type="button"
-            className="dropdown-item"
+            className={`dropdown-item ${darkMode ? "text-light" : ""}`}
             onClick={() => {
               setShowInfoMenu(false);
               if (watershedStatus === "none") {
@@ -319,7 +323,7 @@ const TopButtons: React.FC<TopButtonsProps> = ({
           </button>
           <button
             type="button"
-            className="dropdown-item"
+            className={`dropdown-item ${darkMode ? "text-light" : ""}`}
             onClick={() => {
               setShowInfoMenu(false);
               setDarkMode((d) => !d);
