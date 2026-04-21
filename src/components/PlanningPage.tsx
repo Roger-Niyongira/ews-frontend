@@ -360,8 +360,8 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
             <div className="card shadow-sm h-100 overflow-hidden">
               <div className="flex-grow-1" style={{ minHeight: "420px" }}>
                 <MapContainer
-                  center={[17.6078, 8.0817]}
-                  zoom={6}
+                  center={[0, 20]}
+                  zoom={4}
                   style={{ width: "100%", height: "100%" }}
                 >
                   <LayersControl position="topright">

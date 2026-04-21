@@ -59,7 +59,7 @@ const Navbar: React.FC<NavbarProps> = ({
         </button>
 
         <div
-          className={`navbar-collapse ${isMenuOpen ? "d-block" : "collapse"} d-lg-flex`}
+          className={`navbar-collapse ${isMenuOpen ? "d-block" : "collapse"} d-lg-flex align-items-lg-center`}
           id="navbarNav"
         >
           <ul className="navbar-nav">
@@ -109,16 +109,15 @@ const Navbar: React.FC<NavbarProps> = ({
           </ul>
 
           <Link
-            className="text-white fw-bold ms-lg-auto me-lg-2 mt-3 mt-lg-0"
+            className="nav-link text-white fw-bold ms-lg-auto me-lg-2 mt-2 mt-lg-0"
             to="/contact"
-            style={{ textDecoration: "none" }}
             onClick={() => setIsMenuOpen(false)}
           >
             Get in Touch
           </Link>
 
           {currentUsername ? (
-            <Dropdown align="end" className="me-2 mt-3 mt-lg-0">
+            <Dropdown align="end" className="me-lg-2 mt-2 mt-lg-0">
               <Dropdown.Toggle
                 className="btn btn-link text-white fw-bold"
                 style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
@@ -148,7 +147,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </Dropdown>
           ) : (
             <button
-              className="btn btn-link text-white fw-bold me-2 mt-3 mt-lg-0"
+              className="nav-link btn btn-link text-white fw-bold me-lg-2 mt-2 mt-lg-0 text-start"
               style={{ textDecoration: "none", border: "none", boxShadow: "none" }}
               onClick={() => {
                 setIsMenuOpen(false);
@@ -160,10 +159,9 @@ const Navbar: React.FC<NavbarProps> = ({
           )}
 
           <button
-            className="btn btn-link fw-bold d-flex align-items-center"
+            className="nav-link btn btn-link fw-bold d-flex align-items-center text-start mt-2 mt-lg-0"
             style={{
               color: "#f1c40f",
-              marginRight: "20px",
               textDecoration: "none",
             }}
             onClick={() => {

@@ -277,6 +277,7 @@ function App() {
               path="/dashboard"
               element={
                 <Body
+                  darkMode={darkMode}
                   showClimateZones={showClimateZones}
                   showFloodMap={showFloodMap}
                   showPrecipitations={showPrecipitations}
