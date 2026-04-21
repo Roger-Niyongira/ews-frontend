@@ -89,7 +89,7 @@ const isPointInRing = (point: LngLatTuple, ring: number[][]): boolean => {
     const [lngI, latI] = ring[i];
     const [lngJ, latJ] = ring[j];
     const intersects =
-      latI > lat !== latJ > lat &&
+      (latI > lat) !== (latJ > lat) &&
       lng < ((lngJ - lngI) * (lat - latI)) / (latJ - latI) + lngI;
 
     if (intersects) {
