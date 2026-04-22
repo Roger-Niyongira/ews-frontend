@@ -136,7 +136,13 @@ const AboutPage = () => {
           </div>
 
           <div className="col-lg-5">
-            <div className="bg-white border rounded-4 p-4 shadow-sm h-100">
+            <div
+              className="border rounded-4 p-4"
+              style={{
+                backgroundColor: "#f8fafb",
+                borderColor: "#dce3e8",
+              }}
+            >
               <h2 className="h4 fw-bold mb-3">Four pillars</h2>
               <div className="d-flex flex-column gap-2">
                 {pillars.map((pillar, index) => (
@@ -160,7 +166,7 @@ const AboutPage = () => {
                 ))}
               </div>
             </div>
-            <div className="text-center mt-4">
+            <div className="text-center mt-2">
               <img
                 src={process.env.PUBLIC_URL + "/ews_icon.png"}
                 alt="EWS Logo"
