@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const facts = [
   {
@@ -88,8 +89,8 @@ const AboutPage = () => {
 
         <section className="row g-4 align-items-start mb-4">
           <div className="col-lg-7">
-            <div className="bg-white border rounded-4 p-4 shadow-sm h-100">
-              <h2 className="h4 fw-bold mb-3">Why this project exists</h2>
+            <div className="h-100 py-2">
+              <h2 className="h4 fw-bold mb-3">Our Mission</h2>
               <p>
                 Natural hazards such as floods, droughts, and hurricanes are becoming
                 more frequent and intense under climate change. These hazards can
@@ -112,6 +113,25 @@ const AboutPage = () => {
                 </a>{" "}
                 initiative and its four-pillar framework.
               </p>
+
+              <figure className="mt-4 mb-0">
+                <img
+                  src={process.env.PUBLIC_URL + "/flood_Tchad.png"}
+                  alt="Flood event in Djamena, Chad"
+                  className="img-fluid rounded-3"
+                />
+                <figcaption className="text-muted mt-3 mb-0">
+                  2022 flood event in Djamena, Chad (
+                  <a
+                    href="https://news.un.org/en/story/2022/08/1125562"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Source: United Nations
+                  </a>
+                  )
+                </figcaption>
+              </figure>
             </div>
           </div>
 
@@ -140,51 +160,34 @@ const AboutPage = () => {
                 ))}
               </div>
             </div>
+            <div className="text-center mt-4">
+              <img
+                src={process.env.PUBLIC_URL + "/ews_icon.png"}
+                alt="EWS Logo"
+                style={{ maxWidth: "260px", width: "72%" }}
+              />
+            </div>
           </div>
         </section>
 
-        <section className="row g-4">
-          <div className="col-lg-6">
-            <figure className="bg-white border rounded-4 p-3 shadow-sm h-100 mb-0">
-              <img
-                src={process.env.PUBLIC_URL + "/flood_Tchad.png"}
-                alt="Flood event in Djamena, Chad"
-                className="img-fluid rounded-3"
-              />
-              <figcaption className="text-muted mt-3 mb-0">
-                2022 flood event in Djamena, Chad (
-                <a
-                  href="https://news.un.org/en/story/2022/08/1125562"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Source: United Nations
-                </a>
-                )
-              </figcaption>
-            </figure>
-          </div>
-
-          <div className="col-lg-6">
-            <figure className="bg-white border rounded-4 p-3 shadow-sm h-100 mb-0">
-              <img
-                src={process.env.PUBLIC_URL + "/UN_pillars_for_ews.png"}
-                alt="United Nations early warning system pillars"
-                className="img-fluid rounded-3"
-              />
-              <figcaption className="text-muted mt-3 mb-0">
-                The four pillars of an effective EWS (
-                <a
-                  href="https://www.un.org/en/climatechange/early-warnings-for-all"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Source: United Nations
-                </a>
-                )
-              </figcaption>
-            </figure>
-          </div>
+        <section className="py-3 border-top">
+          <p>
+            Use the{" "}
+            <Link to="/dashboard">
+              dashboard
+            </Link>{" "}
+            to monitor precipitation conditions, view warning levels, inspect
+            project watersheds, and review forecast details for cities and areas of
+            interest.
+          </p>
+          <p className="mb-0">
+            For more detailed GIS-based planning, use the{" "}
+            <Link to="/planning">
+              Planning Tool
+            </Link>{" "}
+            to load watersheds, flood extents, buildings, and infrastructure layers
+            for exposure review and planning support.
+          </p>
         </section>
       </div>
     </div>

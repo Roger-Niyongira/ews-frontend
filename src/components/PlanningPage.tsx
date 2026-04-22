@@ -1,5 +1,12 @@
-import React, { useMemo, useState } from "react";
-import { GeoJSON, LayersControl, MapContainer, TileLayer } from "react-leaflet";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  GeoJSON,
+  LayersControl,
+  MapContainer,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { ProjectGeoJsonLayer } from "../App";
 
@@ -11,6 +18,68 @@ interface PlanningPageProps {
 
 type DataSource = "upload" | "dashboard";
 
+interface PlanningGeoJsonLayer {
+  id: string;
+  name: string;
+  geojsonData: GeoJSON.GeoJsonObject;
+}
+
+const watershedStyle = {
+  color: "#0d6efd",
+  weight: 3,
+  opacity: 1,
+  fillColor: "#9be7ff",
+  fillOpacity: 0.3,
+};
+
+const buildingStyle = {
+  color: "#ff6b00",
+  weight: 2,
+  opacity: 1,
+  fillColor: "#ffd8a8",
+  fillOpacity: 0.35,
+};
+
+const infrastructureStyle = {
+  color: "#198754",
+  weight: 2,
+  opacity: 1,
+  fillColor: "#b7f5cf",
+  fillOpacity: 0.28,
+};
+
+const floodExtentStyle = {
+  color: "#0dcaf0",
+  weight: 2,
+  opacity: 1,
+  fillColor: "#0dcaf0",
+  fillOpacity: 0.28,
+};
+
+const FitToLayers: React.FC<{ layers: PlanningGeoJsonLayer[] }> = ({ layers }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (layers.length === 0) {
+      return;
+    }
+
+    const group = L.featureGroup(
+      layers.map((layer) => L.geoJSON(layer.geojsonData))
+    );
+    const bounds = group.getBounds();
+
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, {
+        padding: [28, 28],
+        maxZoom: 12,
+      });
+    }
+  }, [layers, map]);
+
+  return null;
+};
+
 const PlanningPage: React.FC<PlanningPageProps> = ({
   projectName,
   dashboardWatersheds,
@@ -18,13 +87,32 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
 }) => {
   const [watershedSource, setWatershedSource] = useState<DataSource>("upload");
   const [floodRasterSource, setFloodRasterSource] = useState<DataSource>("upload");
+  const [watershedInputKey, setWatershedInputKey] = useState(0);
   const [watershedFileName, setWatershedFileName] = useState<string | null>(null);
+  const [uploadedWatershed, setUploadedWatershed] =
+    useState<PlanningGeoJsonLayer | null>(null);
+  const [watershedUploadError, setWatershedUploadError] = useState<string | null>(null);
+  const [floodExtentInputKey, setFloodExtentInputKey] = useState(0);
   const [floodRasterFileName, setFloodRasterFileName] = useState<string | null>(null);
+  const [uploadedFloodExtent, setUploadedFloodExtent] =
+    useState<PlanningGeoJsonLayer | null>(null);
+  const [floodExtentUploadError, setFloodExtentUploadError] = useState<string | null>(
+    null
+  );
+  const [buildingInputKey, setBuildingInputKey] = useState(0);
   const [buildingFileName, setBuildingFileName] = useState<string | null>(null);
+  const [uploadedBuilding, setUploadedBuilding] =
+    useState<PlanningGeoJsonLayer | null>(null);
+  const [buildingUploadError, setBuildingUploadError] = useState<string | null>(null);
   const [otherInfrastructureName, setOtherInfrastructureName] = useState("");
+  const [otherInfrastructureInputKey, setOtherInfrastructureInputKey] = useState(0);
   const [otherInfrastructureFileName, setOtherInfrastructureFileName] = useState<
     string | null
   >(null);
+  const [uploadedOtherInfrastructure, setUploadedOtherInfrastructure] =
+    useState<PlanningGeoJsonLayer | null>(null);
+  const [otherInfrastructureUploadError, setOtherInfrastructureUploadError] =
+    useState<string | null>(null);
   const [advancedOptions, setAdvancedOptions] = useState({
     delineateInfrastructure: false,
     costAnalysis: false,
@@ -41,13 +129,217 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
 
   const canUseDashboardWatersheds = availableDashboardWatersheds.length > 0;
 
-  const mapWatersheds = useMemo(
-    () =>
-      watershedSource === "dashboard" && canUseDashboardWatersheds
-        ? availableDashboardWatersheds
-        : [],
-    [availableDashboardWatersheds, canUseDashboardWatersheds, watershedSource]
+  const mapWatersheds = useMemo<PlanningGeoJsonLayer[]>(
+    () => {
+      if (watershedSource === "dashboard" && canUseDashboardWatersheds) {
+        return availableDashboardWatersheds.flatMap((layer) =>
+          layer.geojsonData
+            ? [
+                {
+                  id: `dashboard-${layer.id}`,
+                  name: layer.name,
+                  geojsonData: layer.geojsonData,
+                },
+              ]
+            : []
+        );
+      }
+
+      return uploadedWatershed ? [uploadedWatershed] : [];
+    },
+    [
+      availableDashboardWatersheds,
+      canUseDashboardWatersheds,
+      uploadedWatershed,
+      watershedSource,
+    ]
   );
+
+  const handleWatershedFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    setWatershedUploadError(null);
+    setUploadedWatershed(null);
+    setWatershedFileName(file?.name ?? null);
+
+    if (!file) {
+      return;
+    }
+
+    const lowerName = file.name.toLowerCase();
+
+    if (!lowerName.endsWith(".geojson") && !lowerName.endsWith(".json")) {
+      setWatershedUploadError(
+        "Only GeoJSON or JSON watershed files can be previewed on the map right now. GPKG upload will require backend conversion."
+      );
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsedGeojson = JSON.parse(text) as GeoJSON.GeoJsonObject;
+      setUploadedWatershed({
+        id: `upload-${file.name}-${file.lastModified}`,
+        name: file.name,
+        geojsonData: parsedGeojson,
+      });
+    } catch {
+      setWatershedUploadError(
+        "This file could not be read as valid GeoJSON. Please check the file and try again."
+      );
+    }
+  };
+
+  const clearUploadedWatershed = () => {
+    setWatershedFileName(null);
+    setUploadedWatershed(null);
+    setWatershedUploadError(null);
+    setWatershedInputKey((key) => key + 1);
+  };
+
+  const handleFloodExtentFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    setFloodRasterFileName(file?.name ?? null);
+    setUploadedFloodExtent(null);
+    setFloodExtentUploadError(null);
+
+    if (!file) {
+      return;
+    }
+
+    const lowerName = file.name.toLowerCase();
+
+    if (
+      lowerName.endsWith(".tif") ||
+      lowerName.endsWith(".tiff") ||
+      lowerName.endsWith(".img")
+    ) {
+      setFloodExtentUploadError(
+        "Raster flood extents can be selected for analysis, but they will not be previewed on the map until backend processing is connected."
+      );
+      return;
+    }
+
+    if (!lowerName.endsWith(".geojson") && !lowerName.endsWith(".json")) {
+      setFloodExtentUploadError(
+        "Please load a GeoJSON, JSON, TIF, TIFF, or IMG flood extent file."
+      );
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsedGeojson = JSON.parse(text) as GeoJSON.GeoJsonObject;
+      setUploadedFloodExtent({
+        id: `flood-extent-${file.name}-${file.lastModified}`,
+        name: file.name,
+        geojsonData: parsedGeojson,
+      });
+    } catch {
+      setFloodExtentUploadError(
+        "This file could not be read as valid GeoJSON."
+      );
+    }
+  };
+
+  const clearUploadedFloodExtent = () => {
+    setFloodRasterFileName(null);
+    setUploadedFloodExtent(null);
+    setFloodExtentUploadError(null);
+    setFloodExtentInputKey((key) => key + 1);
+  };
+
+  const loadOptionalGeoJsonLayer = async (
+    file: File,
+    layerKind: "building" | "infrastructure"
+  ) => {
+    const lowerName = file.name.toLowerCase();
+
+    if (lowerName.endsWith(".gpkg")) {
+      return {
+        layer: null,
+        error:
+          "GPKG was selected, but map preview requires backend conversion. The file can still be included in the planning request.",
+      };
+    }
+
+    if (!lowerName.endsWith(".geojson") && !lowerName.endsWith(".json")) {
+      return {
+        layer: null,
+        error: "Please load a GeoJSON, JSON, or GPKG file.",
+      };
+    }
+
+    try {
+      const text = await file.text();
+      const parsedGeojson = JSON.parse(text) as GeoJSON.GeoJsonObject;
+
+      return {
+        layer: {
+          id: `${layerKind}-${file.name}-${file.lastModified}`,
+          name: file.name,
+          geojsonData: parsedGeojson,
+        },
+        error: null,
+      };
+    } catch {
+      return {
+        layer: null,
+        error: "This file could not be read as valid GeoJSON.",
+      };
+    }
+  };
+
+  const handleBuildingFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    setBuildingFileName(file?.name ?? null);
+    setUploadedBuilding(null);
+    setBuildingUploadError(null);
+
+    if (!file) {
+      return;
+    }
+
+    const result = await loadOptionalGeoJsonLayer(file, "building");
+    setUploadedBuilding(result.layer);
+    setBuildingUploadError(result.error);
+  };
+
+  const clearUploadedBuilding = () => {
+    setBuildingFileName(null);
+    setUploadedBuilding(null);
+    setBuildingUploadError(null);
+    setBuildingInputKey((key) => key + 1);
+  };
+
+  const handleOtherInfrastructureFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0] ?? null;
+    setOtherInfrastructureFileName(file?.name ?? null);
+    setUploadedOtherInfrastructure(null);
+    setOtherInfrastructureUploadError(null);
+
+    if (!file) {
+      return;
+    }
+
+    const result = await loadOptionalGeoJsonLayer(file, "infrastructure");
+    setUploadedOtherInfrastructure(result.layer);
+    setOtherInfrastructureUploadError(result.error);
+  };
+
+  const clearUploadedOtherInfrastructure = () => {
+    setOtherInfrastructureFileName(null);
+    setUploadedOtherInfrastructure(null);
+    setOtherInfrastructureUploadError(null);
+    setOtherInfrastructureInputKey((key) => key + 1);
+  };
 
   const toggleAdvancedOption = (
     option: "delineateInfrastructure" | "costAnalysis" | "agentBasedModel"
@@ -112,8 +404,8 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                       </p>
                       <p className="mb-2">
                         Accepted watershed and infrastructure formats include GPKG,
-                        GeoJSON, JSON, and CSV. Flood rasters can be loaded as TIF, TIFF,
-                        or IMG files.
+                        GeoJSON, JSON, and CSV. Flood extents can be previewed when
+                        loaded as GeoJSON or JSON.
                       </p>
                       <p className="mb-2">
                         Get Summary gives an estimate of exposure for your selected
@@ -152,12 +444,11 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
 
                   {watershedSource === "upload" ? (
                     <input
+                      key={watershedInputKey}
                       className="form-control"
                       type="file"
                       accept=".gpkg,.geojson,.json"
-                      onChange={(event) =>
-                        setWatershedFileName(event.target.files?.[0]?.name ?? null)
-                      }
+                      onChange={handleWatershedFileChange}
                     />
                   ) : (
                     <div className="small text-muted">
@@ -168,13 +459,26 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                   )}
 
                   {watershedFileName && (
-                    <div className="small mt-2">Selected file: {watershedFileName}</div>
+                    <div className="d-flex align-items-center justify-content-between gap-2 small mt-2">
+                      <span>Selected file: {watershedFileName}</span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary py-0 px-2"
+                        aria-label="Remove selected watershed"
+                        onClick={clearUploadedWatershed}
+                      >
+                        x
+                      </button>
+                    </div>
+                  )}
+                  {watershedUploadError && (
+                    <div className="small text-danger mt-2">{watershedUploadError}</div>
                   )}
                 </section>
 
                 <section>
                   <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                    <div className="fw-semibold">Load Flood Raster</div>
+                    <div className="fw-semibold">Load Flood Extent</div>
                     <div className="btn-group" role="group" aria-label="Flood raster source">
                       <button
                         type="button"
@@ -196,12 +500,11 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
 
                   {floodRasterSource === "upload" ? (
                     <input
+                      key={floodExtentInputKey}
                       className="form-control"
                       type="file"
-                      accept=".tif,.tiff,.img"
-                      onChange={(event) =>
-                        setFloodRasterFileName(event.target.files?.[0]?.name ?? null)
-                      }
+                      accept=".geojson,.json,.tif,.tiff,.img"
+                      onChange={handleFloodExtentFileChange}
                     />
                   ) : (
                     <div className="small text-muted">
@@ -212,7 +515,22 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                   )}
 
                   {floodRasterFileName && (
-                    <div className="small mt-2">Selected file: {floodRasterFileName}</div>
+                    <div className="d-flex align-items-center justify-content-between gap-2 small mt-2">
+                      <span>Selected file: {floodRasterFileName}</span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary py-0 px-2"
+                        aria-label="Remove selected flood extent"
+                        onClick={clearUploadedFloodExtent}
+                      >
+                        x
+                      </button>
+                    </div>
+                  )}
+                  {floodExtentUploadError && (
+                    <div className="small text-danger mt-2">
+                      {floodExtentUploadError}
+                    </div>
                   )}
                 </section>
 
@@ -221,15 +539,27 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                     <div className="fw-semibold">Load Building</div>
                   </div>
                   <input
+                    key={buildingInputKey}
                     className="form-control"
                     type="file"
-                    accept=".geojson,.json,.gpkg,.csv"
-                    onChange={(event) =>
-                      setBuildingFileName(event.target.files?.[0]?.name ?? null)
-                    }
+                    accept=".gpkg,.geojson,.json"
+                    onChange={handleBuildingFileChange}
                   />
                   {buildingFileName && (
-                    <div className="small mt-2">Selected file: {buildingFileName}</div>
+                    <div className="d-flex align-items-center justify-content-between gap-2 small mt-2">
+                      <span>Selected file: {buildingFileName}</span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary py-0 px-2"
+                        aria-label="Remove selected building layer"
+                        onClick={clearUploadedBuilding}
+                      >
+                        x
+                      </button>
+                    </div>
+                  )}
+                  {buildingUploadError && (
+                    <div className="small text-danger mt-2">{buildingUploadError}</div>
                   )}
                 </section>
 
@@ -246,22 +576,34 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                     />
                   </div>
                   <input
+                    key={otherInfrastructureInputKey}
                     className="form-control"
                     type="file"
-                    accept=".geojson,.json,.gpkg,.csv,.tif,.tiff"
-                    onChange={(event) =>
-                      setOtherInfrastructureFileName(
-                        event.target.files?.[0]?.name ?? null
-                      )
-                    }
+                    accept=".gpkg,.geojson,.json"
+                    onChange={handleOtherInfrastructureFileChange}
                   />
                   {otherInfrastructureFileName && (
-                    <div className="small mt-2">
-                      Selected
-                      {otherInfrastructureName.trim()
-                        ? ` ${otherInfrastructureName.trim()}`
-                        : " infrastructure"}
-                      : {otherInfrastructureFileName}
+                    <div className="d-flex align-items-center justify-content-between gap-2 small mt-2">
+                      <span>
+                        Selected
+                        {otherInfrastructureName.trim()
+                          ? ` ${otherInfrastructureName.trim()}`
+                          : " infrastructure"}
+                        : {otherInfrastructureFileName}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary py-0 px-2"
+                        aria-label="Remove selected infrastructure layer"
+                        onClick={clearUploadedOtherInfrastructure}
+                      >
+                        x
+                      </button>
+                    </div>
+                  )}
+                  {otherInfrastructureUploadError && (
+                    <div className="small text-danger mt-2">
+                      {otherInfrastructureUploadError}
                     </div>
                   )}
                 </section>
@@ -381,6 +723,7 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                       />
                     </LayersControl.BaseLayer>
                   </LayersControl>
+                  <FitToLayers layers={mapWatersheds} />
 
                   {mapWatersheds.map(
                     (layer) =>
@@ -388,15 +731,30 @@ const PlanningPage: React.FC<PlanningPageProps> = ({
                         <GeoJSON
                           key={layer.id}
                           data={layer.geojsonData as GeoJSON.GeoJsonObject}
-                          style={() => ({
-                            color: "#0d6efd",
-                            weight: 3,
-                            opacity: 1,
-                            fillColor: "#9be7ff",
-                            fillOpacity: 0.3,
-                          })}
+                          style={() => watershedStyle}
                         />
                       )
+                  )}
+                  {uploadedBuilding && (
+                    <GeoJSON
+                      key={uploadedBuilding.id}
+                      data={uploadedBuilding.geojsonData}
+                      style={() => buildingStyle}
+                    />
+                  )}
+                  {uploadedFloodExtent && (
+                    <GeoJSON
+                      key={uploadedFloodExtent.id}
+                      data={uploadedFloodExtent.geojsonData}
+                      style={() => floodExtentStyle}
+                    />
+                  )}
+                  {uploadedOtherInfrastructure && (
+                    <GeoJSON
+                      key={uploadedOtherInfrastructure.id}
+                      data={uploadedOtherInfrastructure.geojsonData}
+                      style={() => infrastructureStyle}
+                    />
                   )}
                 </MapContainer>
               </div>

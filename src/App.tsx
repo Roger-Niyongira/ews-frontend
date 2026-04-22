@@ -39,7 +39,10 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showProjects, setShowProjects] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState<boolean>(() => {
+    const savedMode = localStorage.getItem("ews_display_mode");
+    return savedMode ? savedMode === "dark" : true;
+  });
   const [showClimateZones, setShowClimateZones] = useState(false);
   const [showPrecipitations, setShowPrecipitations] = useState(false);
   const [precipitationAvailable, setPrecipitationAvailable] = useState(false);
@@ -94,6 +97,10 @@ function App() {
   useEffect(() => {
     setShowInstruction(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    localStorage.setItem("ews_display_mode", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -353,6 +360,8 @@ function App() {
           defaultThresholds={defaultThresholds}
           onApply={handleApplyThresholds}
           onReset={handleResetThresholds}
+          darkMode={darkMode}
+          setDarkMode={setDarkMode}
         />
       )}
     </div>

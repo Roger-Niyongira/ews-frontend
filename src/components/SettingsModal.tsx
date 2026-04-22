@@ -7,6 +7,8 @@ interface SettingsModalProps {
   defaultThresholds: ClimateThresholds;
   onApply: (thresholds: ClimateThresholds) => void;
   onReset: () => void;
+  darkMode: boolean;
+  setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 type EditorMode = "global" | "custom";
@@ -17,6 +19,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   defaultThresholds,
   onApply,
   onReset,
+  darkMode,
+  setDarkMode,
 }) => {
   const zoneNames = useMemo(
     () =>
@@ -66,6 +70,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   const handleSave = () => {
+    if (zoneNames.length === 0) {
+      onClose();
+      return;
+    }
+
     if (mode === "global") {
       const nextThresholds = zoneNames.reduce<ClimateThresholds>((acc, zone) => {
         acc[zone] = {
@@ -95,11 +104,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <p className="text-uppercase text-primary fw-semibold small mb-2">
               Settings
             </p>
-            <h3 className="mb-2">Climate Threshold Preferences</h3>
-            <p className="text-muted mb-0">
-              Update thresholds temporarily for scenario visuals. Refreshing the
-              page will restore the backend defaults.
-            </p>
+            <h3 className="mb-0">Preferences</h3>
           </div>
           <button
             className="btn btn-outline-secondary btn-sm"
@@ -111,110 +116,145 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         <div className="p-4">
-          <div className="d-flex flex-column flex-md-row gap-3 mb-4">
-            <button
-              type="button"
-              className={`btn ${mode === "global" ? "btn-primary" : "btn-outline-primary"}`}
-              onClick={() => setMode("global")}
-            >
-              Apply to All Climate Zones
-            </button>
-            <button
-              type="button"
-              className={`btn ${mode === "custom" ? "btn-primary" : "btn-outline-primary"}`}
-              onClick={() => setMode("custom")}
-            >
-              Customize Each Climate Zone
-            </button>
-          </div>
+          <section className="mb-4">
+            <h4 className="h6 fw-bold mb-3">Mode</h4>
+            <div className="d-flex flex-column flex-sm-row gap-2">
+              <button
+                type="button"
+                className={`btn ${!darkMode ? "btn-primary" : "btn-outline-primary"}`}
+                onClick={() => setDarkMode(false)}
+              >
+                Light
+              </button>
+              <button
+                type="button"
+                className={`btn ${darkMode ? "btn-primary" : "btn-outline-primary"}`}
+                onClick={() => setDarkMode(true)}
+              >
+                Dark
+              </button>
+            </div>
+          </section>
 
-          {zoneNames.length === 0 ? (
-            <div className="alert alert-warning mb-0">
-              Threshold data is not available yet, so there is nothing to edit.
+          <section className="pt-4 border-top">
+            <h4 className="h5 fw-bold mb-2">Climate Threshold Preferences</h4>
+            <p className="text-muted mb-3">
+              Update thresholds temporarily for scenario visuals. Refreshing the
+              page will restore the backend defaults.
+            </p>
+
+            <div className="alert alert-secondary mb-4">
+              Threshold preferences will not apply directly to the map because
+              applying them spatially requires additional computation. The selected
+              thresholds will be included in the download package from the Planning
+              Tool so they can be used for visualization in a GIS tool.
             </div>
-          ) : mode === "global" ? (
-            <div className="row g-3">
-              <div className="col-md-6">
-                <label htmlFor="global-green" className="form-label fw-semibold">
-                  Green Threshold (mm)
-                </label>
-                <input
-                  id="global-green"
-                  type="number"
-                  className="form-control form-control-lg"
-                  value={globalThresholds.green}
-                  onChange={(e) =>
-                    setGlobalThresholds((current) => ({
-                      ...current,
-                      green: Number(e.target.value),
-                    }))
-                  }
-                />
-              </div>
-              <div className="col-md-6">
-                <label htmlFor="global-orange" className="form-label fw-semibold">
-                  Orange Threshold (mm)
-                </label>
-                <input
-                  id="global-orange"
-                  type="number"
-                  className="form-control form-control-lg"
-                  value={globalThresholds.orange}
-                  onChange={(e) =>
-                    setGlobalThresholds((current) => ({
-                      ...current,
-                      orange: Number(e.target.value),
-                    }))
-                  }
-                />
-              </div>
-              <div className="col-12">
-                <p className="mb-0" style={{ color: "#dc3545" }}>
-                  Saving in this mode applies the same green and orange thresholds
-                  to every climate zone.
-                </p>
-              </div>
+
+            <div className="d-flex flex-column flex-md-row gap-3 mb-4">
+              <button
+                type="button"
+                className={`btn ${mode === "global" ? "btn-primary" : "btn-outline-primary"}`}
+                onClick={() => setMode("global")}
+              >
+                Apply to All Climate Zones
+              </button>
+              <button
+                type="button"
+                className={`btn ${mode === "custom" ? "btn-primary" : "btn-outline-primary"}`}
+                onClick={() => setMode("custom")}
+              >
+                Customize Each Climate Zone
+              </button>
             </div>
-          ) : (
-            <div className="table-responsive">
-              <table className="table align-middle">
-                <thead>
-                  <tr>
-                    <th>Climate Zone</th>
-                    <th>Green Threshold (mm)</th>
-                    <th>Orange Threshold (mm)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {zoneNames.map((zone) => (
-                    <tr key={zone}>
-                      <td className="fw-semibold">{zone}</td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={draftThresholds[zone]?.green ?? 0}
-                          onChange={(e) =>
-                            handleZoneThresholdChange(zone, "green", e.target.value)
-                          }
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="number"
-                          className="form-control"
-                          value={draftThresholds[zone]?.orange ?? 0}
-                          onChange={(e) =>
-                            handleZoneThresholdChange(zone, "orange", e.target.value)
-                          }
-                        />
-                      </td>
+
+            {zoneNames.length === 0 ? (
+              <div className="alert alert-warning mb-0">
+                Threshold data is not available yet, so there is nothing to edit.
+              </div>
+            ) : mode === "global" ? (
+              <div className="row g-3">
+                <div className="col-md-6">
+                  <label htmlFor="global-green" className="form-label fw-semibold">
+                    Green Threshold (mm)
+                  </label>
+                  <input
+                    id="global-green"
+                    type="number"
+                    className="form-control form-control-lg"
+                    value={globalThresholds.green}
+                    onChange={(e) =>
+                      setGlobalThresholds((current) => ({
+                        ...current,
+                        green: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label htmlFor="global-orange" className="form-label fw-semibold">
+                    Orange Threshold (mm)
+                  </label>
+                  <input
+                    id="global-orange"
+                    type="number"
+                    className="form-control form-control-lg"
+                    value={globalThresholds.orange}
+                    onChange={(e) =>
+                      setGlobalThresholds((current) => ({
+                        ...current,
+                        orange: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </div>
+                <div className="col-12">
+                  <p className="mb-0" style={{ color: "#dc3545" }}>
+                    Saving in this mode applies the same green and orange thresholds
+                    to every climate zone.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Climate Zone</th>
+                      <th>Green Threshold (mm)</th>
+                      <th>Orange Threshold (mm)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {zoneNames.map((zone) => (
+                      <tr key={zone}>
+                        <td className="fw-semibold">{zone}</td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control"
+                            value={draftThresholds[zone]?.green ?? 0}
+                            onChange={(e) =>
+                              handleZoneThresholdChange(zone, "green", e.target.value)
+                            }
+                          />
+                        </td>
+                        <td>
+                          <input
+                            type="number"
+                            className="form-control"
+                            value={draftThresholds[zone]?.orange ?? 0}
+                            onChange={(e) =>
+                              handleZoneThresholdChange(zone, "orange", e.target.value)
+                            }
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         </div>
 
         <div className="d-flex flex-column flex-md-row justify-content-between gap-3 p-4 border-top bg-light">
@@ -234,9 +274,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               type="button"
               className="btn btn-primary"
               onClick={handleSave}
-              disabled={zoneNames.length === 0}
             >
-              Save Thresholds
+              Save Preferences
             </button>
           </div>
         </div>
