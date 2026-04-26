@@ -82,15 +82,15 @@ function App() {
 
   useEffect(() => {
     if (location.pathname === "/about") {
-      document.title = "EWS | About";
+      document.title = "About";
     } else if (location.pathname === "/contact") {
-      document.title = "EWS | Contact";
+      document.title = "Contact";
     } else if (location.pathname === "/planning") {
-      document.title = "EWS | Planning Tool";
+      document.title = "Planning Tool";
     } else if (location.pathname === "/preference") {
-      document.title = "EWS | Preference";
+      document.title = "Preference";
     } else {
-      document.title = "EWS | Dashboard";
+      document.title = "Dashboard";
     }
   }, [location.pathname]);
 
