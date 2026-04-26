@@ -189,6 +189,33 @@ const DrawPolygonClickHandler: React.FC<{
   return null;
 };
 
+const MapPaneSetup: React.FC = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map.getPane("watershedPane")) {
+      map.createPane("watershedPane");
+    }
+
+    if (!map.getPane("cityMarkerPane")) {
+      map.createPane("cityMarkerPane");
+    }
+
+    const watershedPane = map.getPane("watershedPane");
+    const cityMarkerPane = map.getPane("cityMarkerPane");
+
+    if (watershedPane) {
+      watershedPane.style.zIndex = "410";
+    }
+
+    if (cityMarkerPane) {
+      cityMarkerPane.style.zIndex = "620";
+    }
+  }, [map]);
+
+  return null;
+};
+
 const MapPanel: React.FC<MapPanelProps> = ({
   cities,
   thresholds,
@@ -581,6 +608,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
         style={style ?? { width: "100%", height: "100%" }}
       >
         <MapReadyBridge onReady={setMapInstance} />
+        <MapPaneSetup />
         <DrawPolygonClickHandler
           enabled={precipitationScope === "polygon"}
           onPointAdd={(point) => {
@@ -657,6 +685,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
               <CircleMarker
                 key={city.id}
                 center={[lat, lon]}
+                pane="cityMarkerPane"
                 radius={5}
                 pathOptions={{
                   color: city.warning_level,
@@ -704,6 +733,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
                 <GeoJSON
                   key={layer.id}
                   data={layer.geojsonData as GeoJSON.GeoJsonObject}
+                  pane="watershedPane"
                   style={() => ({
                     color: "#0d6efd",
                     weight: 3,
