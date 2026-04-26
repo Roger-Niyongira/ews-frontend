@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -209,6 +209,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
     useState<PrecipitationScope>("watersheds");
   const [drawnPolygon, setDrawnPolygon] = useState<LatLngTuple[]>([]);
   const [isDrawnPolygonFinished, setIsDrawnPolygonFinished] = useState(false);
+  const lastTouchCityRef = useRef<{ cityId: number; timestamp: number } | null>(null);
   const availableWatersheds = projectWatersheds.filter((layer) => layer.geojsonData);
   const canUseWatershedScope = availableWatersheds.length > 0;
 
@@ -352,6 +353,25 @@ const MapPanel: React.FC<MapPanelProps> = ({
       setDrawnPolygon([]);
       setIsDrawnPolygonFinished(false);
     }
+  };
+
+  const handleCityMarkerClick = (cityId: number) => {
+    const lastTouch = lastTouchCityRef.current;
+
+    if (
+      lastTouch?.cityId === cityId &&
+      Date.now() - lastTouch.timestamp < 700
+    ) {
+      return;
+    }
+
+    onCityClick(cityId);
+  };
+
+  const handleCityMarkerTouchEnd = (cityId: number, event: L.LeafletEvent) => {
+    lastTouchCityRef.current = { cityId, timestamp: Date.now() };
+    L.DomEvent.stop(event);
+    onCityClick(cityId);
   };
 
   return (
@@ -628,8 +648,10 @@ const MapPanel: React.FC<MapPanelProps> = ({
                   stroke: false,
                 }}
                 eventHandlers={{
-                  click: () => onCityClick(city.id),
-                }}
+                  click: () => handleCityMarkerClick(city.id),
+                  touchend: (event: L.LeafletEvent) =>
+                    handleCityMarkerTouchEnd(city.id, event),
+                } as L.LeafletEventHandlerFnMap}
               >
                 <Tooltip direction="top" offset={[0, -5]}>
                   {city.city} [{city.country}]
