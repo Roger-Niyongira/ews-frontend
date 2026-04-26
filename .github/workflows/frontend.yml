@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL }}
+          REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL || secrets.REACT_APP_API_BASE_URL }}
 
       - name: Upload Pages artifact
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'

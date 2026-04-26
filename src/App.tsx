@@ -31,6 +31,20 @@ export interface ProjectGeoJsonLayer {
 
 function App() {
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+  const resolveBackendUrl = useCallback(
+    (url: string) => {
+      if (/^https?:\/\//i.test(url)) {
+        return url;
+      }
+
+      if (!API_BASE_URL) {
+        return url;
+      }
+
+      return `${API_BASE_URL.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
+    },
+    [API_BASE_URL]
+  );
   const [selectedProject, setSelectedProject] = useState<UserProject | null>(() => {
     const savedProject = localStorage.getItem("ews_selected_project");
     return savedProject ? (JSON.parse(savedProject) as UserProject) : null;
@@ -175,7 +189,7 @@ function App() {
         const watershedLayers = await Promise.all(
           res.data.map(async (layer) => {
             try {
-              const geojsonRes = await fetch(layer.geojson_file);
+              const geojsonRes = await fetch(resolveBackendUrl(layer.geojson_file));
 
               if (!geojsonRes.ok) {
                 throw new Error("Unable to load GeoJSON file");
@@ -196,7 +210,7 @@ function App() {
         setProjectWatersheds([]);
         setShowWatersheds(false);
       });
-  }, [API_BASE_URL, accessToken, selectedProject]);
+  }, [API_BASE_URL, accessToken, resolveBackendUrl, selectedProject]);
 
   const handleApplyThresholds = (nextThresholds: ClimateThresholds) => {
     setThresholds(nextThresholds);
