@@ -33,14 +33,19 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
     opacity: 0.8,
     letterSpacing: "0.04em",
   };
+  const panelStyle: React.CSSProperties = {
+    flex: "1 1 0",
+    minHeight: 0,
+    overflow: "auto",
+  };
 
   return (
-    <div className="d-flex flex-column h-100 gap-2">
+    <div className="d-flex flex-column h-100 gap-2" style={{ minHeight: 0 }}>
       <div
-        className="pt-3 px-3 pb-1 border border-primary border-2 rounded d-flex flex-column"
-        style={{ flex: "1 1 50%", maxHeight: "50%", overflow: "auto" }}
+        className="pt-2 px-3 pb-2 border border-primary border-2 rounded d-flex flex-column"
+        style={panelStyle}
       >
-        <h4 className="hydro-title fw-bold">
+        <h4 className="hydro-title fw-bold mb-2" style={{ fontSize: "1.1rem" }}>
           {cityName && cityCountry
             ? `10-Day Precipitation for ${cityName}, ${cityCountry}`
             : "10-Day Precipitation"}
@@ -58,17 +63,19 @@ const LeftPanel: React.FC<LeftPanelProps> = ({
         {forecastData.length > 0 && <ForecastChart data={forecastData} />}
       </div>
       <div
-        className="pt-3 px-3 pb-1 border border-primary border-2 rounded d-flex flex-column"
-        style={{ flex: "1 1 50%", maxHeight: "50%", overflow: "auto" }}
+        className="pt-2 px-3 pb-2 border border-primary border-2 rounded d-flex flex-column"
+        style={panelStyle}
       >
         <>
-          <h4 className="hydro-title fw-bold">Location Details</h4>
+          <h4 className="hydro-title fw-bold mb-2" style={{ fontSize: "1.1rem" }}>
+            Location Details
+          </h4>
           {!selectedCity ? (
             <p style={{ fontSize: 16, opacity: 0.6 }}>
               Click on a map marker to view city, population, and threshold details.
             </p>
           ) : (
-            <div className="d-flex flex-column gap-3">
+            <div className="d-flex flex-column gap-2" style={{ fontSize: "0.95rem" }}>
               <div>
                 <div
                   className="small text-uppercase"
