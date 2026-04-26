@@ -209,7 +209,11 @@ const MapPanel: React.FC<MapPanelProps> = ({
     useState<PrecipitationScope>("watersheds");
   const [drawnPolygon, setDrawnPolygon] = useState<LatLngTuple[]>([]);
   const [isDrawnPolygonFinished, setIsDrawnPolygonFinished] = useState(false);
-  const lastTouchCityRef = useRef<{ cityId: number; timestamp: number } | null>(null);
+  const [usesTouchInput, setUsesTouchInput] = useState(false);
+  const lastCityActivationRef = useRef<{
+    cityId: number;
+    timestamp: number;
+  } | null>(null);
   const availableWatersheds = projectWatersheds.filter((layer) => layer.geojsonData);
   const canUseWatershedScope = availableWatersheds.length > 0;
 
@@ -284,6 +288,18 @@ const MapPanel: React.FC<MapPanelProps> = ({
       .catch(() => console.error("Failed to load climate zones"));
   }, []);
 
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(hover: none), (pointer: coarse)");
+    const updateInputMode = () => setUsesTouchInput(mediaQuery.matches);
+
+    updateInputMode();
+    mediaQuery.addEventListener("change", updateInputMode);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updateInputMode);
+    };
+  }, []);
+
   const center: [number, number] = small ? [2, 20] : [0, 20];
   const zoom = small ? 3 : 4;
 
@@ -355,23 +371,23 @@ const MapPanel: React.FC<MapPanelProps> = ({
     }
   };
 
-  const handleCityMarkerClick = (cityId: number) => {
-    const lastTouch = lastTouchCityRef.current;
+  const activateCityMarker = (cityId: number) => {
+    const lastActivation = lastCityActivationRef.current;
 
     if (
-      lastTouch?.cityId === cityId &&
-      Date.now() - lastTouch.timestamp < 700
+      lastActivation?.cityId === cityId &&
+      Date.now() - lastActivation.timestamp < 700
     ) {
       return;
     }
 
+    lastCityActivationRef.current = { cityId, timestamp: Date.now() };
     onCityClick(cityId);
   };
 
-  const handleCityMarkerTouchEnd = (cityId: number, event: L.LeafletEvent) => {
-    lastTouchCityRef.current = { cityId, timestamp: Date.now() };
+  const handleCityMarkerTouch = (cityId: number, event: L.LeafletEvent) => {
     L.DomEvent.stop(event);
-    onCityClick(cityId);
+    activateCityMarker(cityId);
   };
 
   return (
@@ -648,16 +664,20 @@ const MapPanel: React.FC<MapPanelProps> = ({
                   stroke: false,
                 }}
                 eventHandlers={{
-                  click: () => handleCityMarkerClick(city.id),
+                  click: () => activateCityMarker(city.id),
+                  touchstart: (event: L.LeafletEvent) =>
+                    handleCityMarkerTouch(city.id, event),
                   touchend: (event: L.LeafletEvent) =>
-                    handleCityMarkerTouchEnd(city.id, event),
+                    handleCityMarkerTouch(city.id, event),
                 } as L.LeafletEventHandlerFnMap}
               >
-                <Tooltip direction="top" offset={[0, -5]}>
-                  {city.city} [{city.country}]
-                  <br />
-                  Pop: {city.population ?? "N/A"}
-                </Tooltip>
+                {!usesTouchInput && (
+                  <Tooltip direction="top" offset={[0, -5]}>
+                    {city.city} [{city.country}]
+                    <br />
+                    Pop: {city.population ?? "N/A"}
+                  </Tooltip>
+                )}
               </CircleMarker>
             );
           })}
