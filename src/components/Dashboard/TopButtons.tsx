@@ -19,6 +19,8 @@ interface TopButtonsProps {
   watershedStatus: "public" | "private" | "none";
   userCanAccessWatersheds: boolean;
   precipitationAvailable: boolean;
+  precipitationLastUpdate: string | null;
+  precipitationLoading: boolean;
   onLoginClick: () => void;
 }
 
@@ -40,6 +42,8 @@ const TopButtons: React.FC<TopButtonsProps> = ({
   watershedStatus,
   userCanAccessWatersheds,
   precipitationAvailable,
+  precipitationLastUpdate,
+  precipitationLoading,
   onLoginClick,
 }) => {
   const isMobile = window.innerWidth <= 768;
@@ -122,6 +126,75 @@ const TopButtons: React.FC<TopButtonsProps> = ({
     });
   };
 
+  const formatExactLastUpdate = (date: Date) =>
+    date.toLocaleString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short",
+    });
+
+  const formatRelativeLastUpdate = (date: Date) => {
+    const diffMs = Date.now() - date.getTime();
+    const absDiffMs = Math.abs(diffMs);
+    const minute = 60 * 1000;
+    const hour = 60 * minute;
+    const day = 24 * hour;
+
+    if (absDiffMs < minute) {
+      return "Just now";
+    }
+
+    if (absDiffMs < hour) {
+      const minutes = Math.round(absDiffMs / minute);
+      return `${minutes}m ago`;
+    }
+
+    if (absDiffMs < day) {
+      const hours = Math.round(absDiffMs / hour);
+      return `${hours}h ago`;
+    }
+
+    const days = Math.round(absDiffMs / day);
+    return `${days}d ago`;
+  };
+
+  const getLastUpdateDisplay = () => {
+    if (precipitationLoading) {
+      return {
+        label: "Loading...",
+        title: "Precipitation data is loading",
+      };
+    }
+
+    if (!precipitationLastUpdate) {
+      return {
+        label: "Unavailable",
+        title: "Last update timestamp is not available",
+      };
+    }
+
+    const parsedDate = new Date(precipitationLastUpdate);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return {
+        label: precipitationLastUpdate,
+        title: precipitationLastUpdate,
+      };
+    }
+
+    const exactDate = formatExactLastUpdate(parsedDate);
+
+    return {
+      label: formatRelativeLastUpdate(parsedDate),
+      title: exactDate,
+    };
+  };
+
+  const lastUpdateDisplay = getLastUpdateDisplay();
+
   const renderButtons = () => (
     <>
       {currentProjectName && (
@@ -132,8 +205,12 @@ const TopButtons: React.FC<TopButtonsProps> = ({
         </div>
       )}
       <div>
-        <button className="btn btn-info fw-bold w-100" style={buttonStyle}>
-          LAST UPDATE: Loading...
+        <button
+          className="btn btn-info fw-bold w-100"
+          style={buttonStyle}
+          title={lastUpdateDisplay.title}
+        >
+          LAST UPDATE: {lastUpdateDisplay.label}
         </button>
       </div>
 
@@ -253,8 +330,11 @@ const TopButtons: React.FC<TopButtonsProps> = ({
               PROJECT: {currentProjectName}
             </div>
           )}
-          <div className={`px-3 py-2 small ${darkMode ? "text-light" : "text-muted"}`}>
-            LAST UPDATE: Loading...
+          <div
+            className={`px-3 py-2 small ${darkMode ? "text-light" : "text-muted"}`}
+            title={lastUpdateDisplay.title}
+          >
+            LAST UPDATE: {lastUpdateDisplay.label}
           </div>
           <button
             type="button"

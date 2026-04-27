@@ -16,8 +16,26 @@ interface BodyProps {
   projectName: string | null;
   projectWatersheds: ProjectGeoJsonLayer[];
   thresholds: ClimateThresholds;
-  onPrecipitationAvailabilityChange: (available: boolean) => void;
+  onPrecipitationAvailabilityChange: (
+    available: boolean,
+    lastUpdate: string | null,
+    isLoading: boolean
+  ) => void;
 }
+
+const getPrecipitationLastUpdate = (cities: City[]) => {
+  const timestamp = cities
+    .flatMap((city) => [
+      city.grib_downloaded_at,
+      city.forecast_updated_at,
+      city.last_updated,
+      city.updated_at,
+    ])
+    .find((value): value is string => Boolean(value));
+
+  return timestamp ?? null;
+};
+
 const Body: React.FC<BodyProps> = ({
   darkMode,
   showClimateZones,
@@ -41,15 +59,21 @@ const Body: React.FC<BodyProps> = ({
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
 
   useEffect(() => {
+    onPrecipitationAvailabilityChange(false, null, true);
+
     axios
       .get<City[]>(`${API_BASE_URL}/api/cities/`)
       .then((res) => {
         setCities(res.data);
-        onPrecipitationAvailabilityChange(res.data.length > 0);
+        onPrecipitationAvailabilityChange(
+          res.data.length > 0,
+          getPrecipitationLastUpdate(res.data),
+          false
+        );
       })
       .catch(() => {
         setCities([]);
-        onPrecipitationAvailabilityChange(false);
+        onPrecipitationAvailabilityChange(false, null, false);
       });
   }, [API_BASE_URL, onPrecipitationAvailabilityChange]);
 

@@ -60,6 +60,8 @@ function App() {
   const [showClimateZones, setShowClimateZones] = useState(false);
   const [showPrecipitations, setShowPrecipitations] = useState(false);
   const [precipitationAvailable, setPrecipitationAvailable] = useState(false);
+  const [precipitationLastUpdate, setPrecipitationLastUpdate] = useState<string | null>(null);
+  const [precipitationLoading, setPrecipitationLoading] = useState(true);
   const [showWatersheds, setShowWatersheds] = useState(false);
   const location = useLocation();
   const isDashboard = location.pathname === "/dashboard";
@@ -222,9 +224,18 @@ function App() {
     setShowSettings(false);
   };
 
-  const handlePrecipitationAvailabilityChange = useCallback((available: boolean) => {
+  const handlePrecipitationAvailabilityChange = useCallback((
+    available: boolean,
+    lastUpdate: string | null,
+    isLoading: boolean
+  ) => {
     setPrecipitationAvailable(available);
-    setShowPrecipitations(available);
+    setPrecipitationLastUpdate(lastUpdate);
+    setPrecipitationLoading(isLoading);
+
+    if (!isLoading) {
+      setShowPrecipitations(available);
+    }
   }, []);
 
   const handleLoginSuccess = (payload: {
@@ -308,6 +319,8 @@ function App() {
             watershedStatus={watershedStatus}
             userCanAccessWatersheds={userCanAccessWatersheds}
             precipitationAvailable={precipitationAvailable}
+            precipitationLastUpdate={precipitationLastUpdate}
+            precipitationLoading={precipitationLoading}
             onLoginClick={() => setShowLogin(true)}
           />
         )}

@@ -22,6 +22,10 @@ export interface City {
   warning_level: "green" | "orange" | "red" | "no_data";
   population: number | null;
   climate_zone?: string | null;
+  grib_downloaded_at?: string | null;
+  forecast_updated_at?: string | null;
+  last_updated?: string | null;
+  updated_at?: string | null;
 }
 
 interface MapPanelProps {
