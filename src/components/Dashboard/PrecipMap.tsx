@@ -57,14 +57,18 @@ interface WatershedFeatureSummary {
 type PrecipitationScope = "all" | "watersheds" | "polygon";
 type LatLngTuple = [number, number];
 type LngLatTuple = [number, number];
+const DEFAULT_FLOOD_RETURN_PERIOD_BY_HAZARD: Record<string, string> = {
+  fluvial: "F100",
+  pluvial: "P100",
+};
 
 const FLOOD_DEPTH_RANGES = [
-  { color: "#d6f3ff", label: "0.05 - 0.25 m" },
-  { color: "#8bd8ff", label: "0.25 - 0.5 m" },
-  { color: "#39a9f5", label: "0.5 - 1 m" },
-  { color: "#0b6fb3", label: "1 - 2 m" },
-  { color: "#08306b", label: "2 - 5 m" },
-  { color: "#3f007d", label: "> 5 m" },
+  { color: "#d6f3ff", label: "0.05 - 0.25" },
+  { color: "#8bd8ff", label: "0.25 - 0.5" },
+  { color: "#39a9f5", label: "0.5 - 1" },
+  { color: "#0b6fb3", label: "1 - 2" },
+  { color: "#08306b", label: "2 - 5" },
+  { color: "#3f007d", label: "> 5" },
 ];
 
 const Legend: React.FC = () => {
@@ -213,6 +217,19 @@ const FloodFeatureInfoHandler: React.FC<{
   layer: ProjectFloodLayer | null;
 }> = ({ enabled, layer }) => {
   const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    const previousCursor = container.style.cursor;
+
+    if (enabled && layer) {
+      container.style.cursor = "crosshair";
+    }
+
+    return () => {
+      container.style.cursor = previousCursor;
+    };
+  }, [enabled, layer, map]);
 
   useMapEvents({
     click(event) {
@@ -491,9 +508,19 @@ const MapPanel: React.FC<MapPanelProps> = ({
         return currentReturnPeriod;
       }
 
+      const defaultReturnPeriod =
+        DEFAULT_FLOOD_RETURN_PERIOD_BY_HAZARD[selectedFloodHazard];
+
+      if (
+        defaultReturnPeriod &&
+        floodReturnPeriods.includes(defaultReturnPeriod)
+      ) {
+        return defaultReturnPeriod;
+      }
+
       return floodReturnPeriods[0] ?? "";
     });
-  }, [floodReturnPeriods]);
+  }, [floodReturnPeriods, selectedFloodHazard]);
 
   const center: [number, number] = small ? [2, 20] : [0, 20];
   const zoom = small ? 3 : 4;
@@ -813,7 +840,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
             minWidth: 170,
           }}
         >
-          <div className="fw-semibold mb-2">Depth Ranges</div>
+          <div className="fw-semibold mb-2">Depth (m)</div>
           <div className="small" style={{ color: "#d7dde4" }}>
             {FLOOD_DEPTH_RANGES.map((range) => (
               <div
