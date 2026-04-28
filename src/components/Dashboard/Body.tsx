@@ -5,7 +5,11 @@ import MapPanel from "./PrecipMap";
 import type { City } from "./PrecipMap";
 import { ForecastRecord } from "./ForecastChart";
 import { motion } from "framer-motion";
-import type { ClimateThresholds, ProjectGeoJsonLayer } from "../../App";
+import type {
+  ClimateThresholds,
+  ProjectFloodLayer,
+  ProjectGeoJsonLayer,
+} from "../../App";
 
 interface BodyProps {
   darkMode: boolean;
@@ -15,6 +19,7 @@ interface BodyProps {
   showWatersheds: boolean;
   projectName: string | null;
   projectWatersheds: ProjectGeoJsonLayer[];
+  projectFloodLayers: ProjectFloodLayer[];
   thresholds: ClimateThresholds;
   onPrecipitationAvailabilityChange: (
     available: boolean,
@@ -44,6 +49,7 @@ const Body: React.FC<BodyProps> = ({
   showWatersheds,
   projectName,
   projectWatersheds,
+  projectFloodLayers,
   thresholds,
   onPrecipitationAvailabilityChange,
 }) => {
@@ -128,6 +134,7 @@ const Body: React.FC<BodyProps> = ({
             showWatersheds={showWatersheds}
             projectName={projectName}
             projectWatersheds={projectWatersheds}
+            projectFloodLayers={projectFloodLayers}
           />
           <button
             type="button"

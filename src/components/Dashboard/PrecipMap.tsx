@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   MapContainer,
   TileLayer,
+  WMSTileLayer,
   GeoJSON,
   CircleMarker,
   LayersControl,
@@ -12,7 +13,11 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import type { ClimateThresholds, ProjectGeoJsonLayer } from "../../App";
+import type {
+  ClimateThresholds,
+  ProjectFloodLayer,
+  ProjectGeoJsonLayer,
+} from "../../App";
 
 export interface City {
   id: number;
@@ -38,6 +43,7 @@ interface MapPanelProps {
   showWatersheds: boolean;
   projectName: string | null;
   projectWatersheds: ProjectGeoJsonLayer[];
+  projectFloodLayers: ProjectFloodLayer[];
   small?: boolean;
   style?: React.CSSProperties;
 }
@@ -201,12 +207,21 @@ const MapPaneSetup: React.FC = () => {
       map.createPane("watershedPane");
     }
 
+    if (!map.getPane("floodPane")) {
+      map.createPane("floodPane");
+    }
+
     if (!map.getPane("cityMarkerPane")) {
       map.createPane("cityMarkerPane");
     }
 
     const watershedPane = map.getPane("watershedPane");
+    const floodPane = map.getPane("floodPane");
     const cityMarkerPane = map.getPane("cityMarkerPane");
+
+    if (floodPane) {
+      floodPane.style.zIndex = "405";
+    }
 
     if (watershedPane) {
       watershedPane.style.zIndex = "410";
@@ -230,6 +245,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
   showWatersheds,
   projectName,
   projectWatersheds,
+  projectFloodLayers,
   small,
   style,
 }) => {
@@ -247,6 +263,42 @@ const MapPanel: React.FC<MapPanelProps> = ({
   } | null>(null);
   const availableWatersheds = projectWatersheds.filter((layer) => layer.geojsonData);
   const canUseWatershedScope = availableWatersheds.length > 0;
+  const [selectedFloodHazard, setSelectedFloodHazard] = useState<string>("");
+  const [selectedFloodReturnPeriod, setSelectedFloodReturnPeriod] = useState<string>("");
+
+  const floodHazards = useMemo(
+    () =>
+      Array.from(
+        new Set(projectFloodLayers.map((layer) => layer.hazard).filter(Boolean))
+      ),
+    [projectFloodLayers]
+  );
+
+  const floodReturnPeriods = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          projectFloodLayers
+            .filter(
+              (layer) =>
+                !selectedFloodHazard || layer.hazard === selectedFloodHazard
+            )
+            .map((layer) => layer.return_period)
+            .filter(Boolean)
+        )
+      ),
+    [projectFloodLayers, selectedFloodHazard]
+  );
+
+  const activeFloodLayer = useMemo(
+    () =>
+      projectFloodLayers.find(
+        (layer) =>
+          layer.hazard === selectedFloodHazard &&
+          layer.return_period === selectedFloodReturnPeriod
+      ) ?? null,
+    [projectFloodLayers, selectedFloodHazard, selectedFloodReturnPeriod]
+  );
 
   const getWatershedFeatureSummary = (
     feature: GeoJSON.Feature,
@@ -330,6 +382,35 @@ const MapPanel: React.FC<MapPanelProps> = ({
       mediaQuery.removeEventListener("change", updateInputMode);
     };
   }, []);
+
+  useEffect(() => {
+    if (projectFloodLayers.length === 0) {
+      setSelectedFloodHazard("");
+      setSelectedFloodReturnPeriod("");
+      return;
+    }
+
+    setSelectedFloodHazard((currentHazard) => {
+      if (currentHazard && floodHazards.includes(currentHazard)) {
+        return currentHazard;
+      }
+
+      return floodHazards[0] ?? "";
+    });
+  }, [floodHazards, projectFloodLayers.length]);
+
+  useEffect(() => {
+    setSelectedFloodReturnPeriod((currentReturnPeriod) => {
+      if (
+        currentReturnPeriod &&
+        floodReturnPeriods.includes(currentReturnPeriod)
+      ) {
+        return currentReturnPeriod;
+      }
+
+      return floodReturnPeriods[0] ?? "";
+    });
+  }, [floodReturnPeriods]);
 
   const center: [number, number] = small ? [2, 20] : [0, 20];
   const zoom = small ? 3 : 4;
@@ -423,7 +504,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
   return (
     <div className="w-100 h-100 position-relative">
-      {projectName && (projectWatersheds.length > 0 || showFloodMap) && (
+      {projectName && (projectWatersheds.length > 0 || projectFloodLayers.length > 0) && (
         <div
           className="rounded shadow-sm"
           style={{
@@ -592,11 +673,40 @@ const MapPanel: React.FC<MapPanelProps> = ({
                 </div>
               )}
 
-              {showFloodMap && (
+              {projectFloodLayers.length > 0 && (
                 <div>
                   <div className="fw-semibold mb-2">Flood Maps</div>
-                  <div className="small" style={{ color: "#c7ced6" }}>
-                    Flood map items will appear here when project flood layers are connected.
+                  <div className="d-flex flex-wrap gap-2 mb-2">
+                    {floodHazards.map((hazard) => (
+                      <button
+                        key={hazard}
+                        type="button"
+                        className={`btn btn-sm ${
+                          selectedFloodHazard === hazard
+                            ? "btn-info"
+                            : "btn-outline-light"
+                        }`}
+                        onClick={() => setSelectedFloodHazard(hazard)}
+                      >
+                        {hazard}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="d-flex flex-wrap gap-2">
+                    {floodReturnPeriods.map((returnPeriod) => (
+                      <button
+                        key={returnPeriod}
+                        type="button"
+                        className={`btn btn-sm ${
+                          selectedFloodReturnPeriod === returnPeriod
+                            ? "btn-info"
+                            : "btn-outline-light"
+                        }`}
+                        onClick={() => setSelectedFloodReturnPeriod(returnPeriod)}
+                      >
+                        {returnPeriod}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -637,6 +747,19 @@ const MapPanel: React.FC<MapPanelProps> = ({
           </LayersControl.BaseLayer>
         </LayersControl>
         <Legend />
+
+        {showFloodMap && activeFloodLayer && (
+          <WMSTileLayer
+            key={`${activeFloodLayer.geoserver_layer}-${activeFloodLayer.style}`}
+            url={activeFloodLayer.wms_url}
+            layers={activeFloodLayer.geoserver_layer}
+            styles={activeFloodLayer.style}
+            format="image/png"
+            transparent
+            opacity={0.75}
+            pane="floodPane"
+          />
+        )}
 
         {showClimateZones && climateZones && (
           <GeoJSON

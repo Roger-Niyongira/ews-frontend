@@ -29,6 +29,18 @@ export interface ProjectGeoJsonLayer {
   geojsonData: GeoJSON.GeoJsonObject | null;
 }
 
+export interface ProjectFloodLayer {
+  id: number;
+  name: string;
+  project: string | null;
+  is_public: boolean;
+  hazard: "fluvial" | "pluvial" | string;
+  return_period: string;
+  geoserver_layer: string;
+  style: string;
+  wms_url: string;
+}
+
 function App() {
   const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
   const resolveBackendUrl = useCallback(
@@ -67,8 +79,6 @@ function App() {
   const isDashboard = location.pathname === "/dashboard";
 
   const [showFloodMap, setShowFloodMap] = useState(false);
-  const [floodMapStatus] = useState<"public" | "private" | "none">("none");
-  const [userCanAccessFloodMap] = useState(false);
   const [defaultThresholds, setDefaultThresholds] = useState<ClimateThresholds>({});
   const [thresholds, setThresholds] = useState<ClimateThresholds>({});
   const [currentUsername, setCurrentUsername] = useState<string | null>(() =>
@@ -88,13 +98,17 @@ function App() {
   );
   const [projects, setProjects] = useState<UserProject[]>([]);
   const [projectWatersheds, setProjectWatersheds] = useState<ProjectGeoJsonLayer[]>([]);
+  const [projectFloodLayers, setProjectFloodLayers] = useState<ProjectFloodLayer[]>([]);
   const watershedStatus: "public" | "private" | "none" =
     projectWatersheds.length > 0 && selectedProject ? "private" : "none";
   const userCanAccessWatersheds =
     Boolean(selectedProject) && projectWatersheds.length > 0;
+  const floodMapStatus: "public" | "private" | "none" =
+    projectFloodLayers.length > 0 && selectedProject ? "private" : "none";
+  const userCanAccessFloodMap =
+    Boolean(selectedProject) && projectFloodLayers.length > 0;
   const dashboardFloodRasterAvailable =
-    floodMapStatus !== "none" &&
-    (floodMapStatus === "public" || userCanAccessFloodMap);
+    floodMapStatus !== "none" && userCanAccessFloodMap;
 
   useEffect(() => {
     if (location.pathname === "/about") {
@@ -122,6 +136,7 @@ function App() {
     if (!accessToken) {
       setProjects([]);
       setSelectedProject(null);
+      setProjectFloodLayers([]);
       return;
     }
 
@@ -157,6 +172,7 @@ function App() {
         setRefreshToken(null);
         setProjects([]);
         setSelectedProject(null);
+        setProjectFloodLayers([]);
       });
   }, [API_BASE_URL, accessToken]);
 
@@ -213,6 +229,30 @@ function App() {
         setShowWatersheds(false);
       });
   }, [API_BASE_URL, accessToken, resolveBackendUrl, selectedProject]);
+
+  useEffect(() => {
+    if (!selectedProject || !accessToken) {
+      setProjectFloodLayers([]);
+      setShowFloodMap(false);
+      return;
+    }
+
+    axios
+      .get<ProjectFloodLayer[]>(
+        `${API_BASE_URL}/api/projects/${selectedProject.slug}/flood-layers/`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      )
+      .then((res) => {
+        setProjectFloodLayers(res.data);
+        setShowFloodMap(res.data.length > 0);
+      })
+      .catch(() => {
+        setProjectFloodLayers([]);
+        setShowFloodMap(false);
+      });
+  }, [API_BASE_URL, accessToken, selectedProject]);
 
   const handleApplyThresholds = (nextThresholds: ClimateThresholds) => {
     setThresholds(nextThresholds);
@@ -278,6 +318,7 @@ function App() {
     setRefreshToken(null);
     setProjects([]);
     setSelectedProject(null);
+    setProjectFloodLayers([]);
     setShowProjects(false);
   };
 
@@ -338,6 +379,7 @@ function App() {
                   showPrecipitations={showPrecipitations}
                   projectName={selectedProject?.name ?? null}
                   projectWatersheds={projectWatersheds}
+                  projectFloodLayers={projectFloodLayers}
                   showWatersheds={showWatersheds}
                   thresholds={thresholds}
                   onPrecipitationAvailabilityChange={
