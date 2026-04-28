@@ -334,14 +334,13 @@ const FloodFeatureInfoHandler: React.FC<{
 
       readFloodDepthValue(event.latlng, point)
         .then((value) => {
-          const content =
-            value !== null
-              ? `<strong>${layer.name}</strong><br/>Depth: ${value.toFixed(2)} m`
-              : `<strong>${layer.name}</strong><br/>No flood depth value`;
+          if (value === null) {
+            return;
+          }
 
           L.popup()
             .setLatLng(event.latlng)
-            .setContent(content)
+            .setContent(`<strong>${layer.name}</strong><br/>Depth: ${value.toFixed(2)} m`)
             .openOn(map);
         })
         .catch(() => {
