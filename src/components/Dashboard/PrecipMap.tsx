@@ -365,6 +365,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
   const canUseWatershedScope = availableWatersheds.length > 0;
   const [selectedFloodHazard, setSelectedFloodHazard] = useState<string>("");
   const [selectedFloodReturnPeriod, setSelectedFloodReturnPeriod] = useState<string>("");
+  const previousFloodHazardRef = useRef<string>("");
 
   const floodHazards = useMemo(
     () =>
@@ -501,15 +502,25 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
   useEffect(() => {
     setSelectedFloodReturnPeriod((currentReturnPeriod) => {
+      const hazardChanged = previousFloodHazardRef.current !== selectedFloodHazard;
+      previousFloodHazardRef.current = selectedFloodHazard;
+      const defaultReturnPeriod =
+        DEFAULT_FLOOD_RETURN_PERIOD_BY_HAZARD[selectedFloodHazard];
+
+      if (
+        hazardChanged &&
+        defaultReturnPeriod &&
+        floodReturnPeriods.includes(defaultReturnPeriod)
+      ) {
+        return defaultReturnPeriod;
+      }
+
       if (
         currentReturnPeriod &&
         floodReturnPeriods.includes(currentReturnPeriod)
       ) {
         return currentReturnPeriod;
       }
-
-      const defaultReturnPeriod =
-        DEFAULT_FLOOD_RETURN_PERIOD_BY_HAZARD[selectedFloodHazard];
 
       if (
         defaultReturnPeriod &&
