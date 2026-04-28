@@ -58,6 +58,15 @@ type PrecipitationScope = "all" | "watersheds" | "polygon";
 type LatLngTuple = [number, number];
 type LngLatTuple = [number, number];
 
+const FLOOD_DEPTH_RANGES = [
+  { color: "#d6f3ff", label: "0.05 - 0.25 m" },
+  { color: "#8bd8ff", label: "0.25 - 0.5 m" },
+  { color: "#39a9f5", label: "0.5 - 1 m" },
+  { color: "#0b6fb3", label: "1 - 2 m" },
+  { color: "#08306b", label: "2 - 5 m" },
+  { color: "#3f007d", label: "> 5 m" },
+];
+
 const Legend: React.FC = () => {
   const map = useMap();
 
@@ -199,6 +208,80 @@ const DrawPolygonClickHandler: React.FC<{
   return null;
 };
 
+const FloodFeatureInfoHandler: React.FC<{
+  enabled: boolean;
+  layer: ProjectFloodLayer | null;
+}> = ({ enabled, layer }) => {
+  const map = useMap();
+
+  useMapEvents({
+    click(event) {
+      if (!enabled || !layer) {
+        return;
+      }
+
+      const size = map.getSize();
+      const bounds = map.getBounds();
+      const crs = map.options.crs ?? L.CRS.EPSG3857;
+      const sw = crs.project(bounds.getSouthWest());
+      const ne = crs.project(bounds.getNorthEast());
+      const point = map.latLngToContainerPoint(event.latlng);
+
+      const params = new URLSearchParams({
+        service: "WMS",
+        version: "1.1.1",
+        request: "GetFeatureInfo",
+        layers: layer.geoserver_layer,
+        query_layers: layer.geoserver_layer,
+        styles: layer.style || "",
+        bbox: `${sw.x},${sw.y},${ne.x},${ne.y}`,
+        height: String(size.y),
+        width: String(size.x),
+        srs: "EPSG:3857",
+        info_format: "application/json",
+        feature_count: "1",
+        x: String(Math.round(point.x)),
+        y: String(Math.round(point.y)),
+      });
+
+      fetch(`${layer.wms_url}?${params.toString()}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Unable to query flood depth.");
+          }
+
+          return res.json();
+        })
+        .then((data) => {
+          const feature = data?.features?.[0];
+          const rawValue =
+            feature?.properties?.GRAY_INDEX ??
+            feature?.properties?.gray_index ??
+            feature?.properties?.value;
+          const value = Number(rawValue);
+
+          const content =
+            Number.isFinite(value) && value > 0
+              ? `<strong>${layer.name}</strong><br/>Depth: ${value.toFixed(2)} m`
+              : `<strong>${layer.name}</strong><br/>No flood depth value`;
+
+          L.popup()
+            .setLatLng(event.latlng)
+            .setContent(content)
+            .openOn(map);
+        })
+        .catch(() => {
+          L.popup()
+            .setLatLng(event.latlng)
+            .setContent("Unable to query flood depth at this location.")
+            .openOn(map);
+        });
+    },
+  });
+
+  return null;
+};
+
 const MapPaneSetup: React.FC = () => {
   const map = useMap();
 
@@ -219,12 +302,12 @@ const MapPaneSetup: React.FC = () => {
     const floodPane = map.getPane("floodPane");
     const cityMarkerPane = map.getPane("cityMarkerPane");
 
-    if (floodPane) {
-      floodPane.style.zIndex = "405";
-    }
-
     if (watershedPane) {
       watershedPane.style.zIndex = "410";
+    }
+
+    if (floodPane) {
+      floodPane.style.zIndex = "420";
     }
 
     if (cityMarkerPane) {
@@ -715,6 +798,45 @@ const MapPanel: React.FC<MapPanelProps> = ({
         </div>
       )}
 
+      {showFloodMap && activeFloodLayer && (
+        <div
+          className="shadow-sm"
+          style={{
+            position: "absolute",
+            right: 12,
+            bottom: 12,
+            zIndex: 1000,
+            backgroundColor: "rgba(47, 52, 58, 0.94)",
+            color: "#f8f9fa",
+            padding: "0.75rem",
+            borderRadius: 6,
+            minWidth: 170,
+          }}
+        >
+          <div className="fw-semibold mb-2">Depth Ranges</div>
+          <div className="small" style={{ color: "#d7dde4" }}>
+            {FLOOD_DEPTH_RANGES.map((range) => (
+              <div
+                key={range.label}
+                className="d-flex align-items-center gap-2 mb-1"
+              >
+                <span
+                  style={{
+                    background: range.color,
+                    display: "inline-block",
+                    width: 18,
+                    height: 10,
+                    borderRadius: 2,
+                    flex: "0 0 auto",
+                  }}
+                />
+                <span>{range.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <MapContainer
         className="dashboard-precip-map"
         center={center}
@@ -729,6 +851,10 @@ const MapPanel: React.FC<MapPanelProps> = ({
             setIsDrawnPolygonFinished(false);
             setDrawnPolygon((currentPoints) => [...currentPoints, point]);
           }}
+        />
+        <FloodFeatureInfoHandler
+          enabled={showFloodMap}
+          layer={activeFloodLayer}
         />
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="OpenStreetMap">
@@ -865,8 +991,8 @@ const MapPanel: React.FC<MapPanelProps> = ({
                     color: "#0d6efd",
                     weight: 3,
                     opacity: 1,
-                    fillColor: "#9be7ff",
-                    fillOpacity: 0.3,
+                    fillColor: "#7b2cbf",
+                    fillOpacity: 0,
                   })}
                   onEachFeature={(feature, leafletLayer) => {
                     const { name, areaKm2 } = getWatershedFeatureSummary(
@@ -883,6 +1009,36 @@ const MapPanel: React.FC<MapPanelProps> = ({
                         direction: "top",
                       }
                     );
+                    leafletLayer.on({
+                      mouseover: () => {
+                        if (
+                          "setStyle" in leafletLayer &&
+                          typeof leafletLayer.setStyle === "function"
+                        ) {
+                          leafletLayer.setStyle({
+                            color: "#7b2cbf",
+                            weight: 3,
+                            opacity: 1,
+                            fillColor: "#7b2cbf",
+                            fillOpacity: 0.16,
+                          });
+                        }
+                      },
+                      mouseout: () => {
+                        if (
+                          "setStyle" in leafletLayer &&
+                          typeof leafletLayer.setStyle === "function"
+                        ) {
+                          leafletLayer.setStyle({
+                            color: "#0d6efd",
+                            weight: 3,
+                            opacity: 1,
+                            fillColor: "#7b2cbf",
+                            fillOpacity: 0,
+                          });
+                        }
+                      },
+                    });
                   }}
                 />
               )
