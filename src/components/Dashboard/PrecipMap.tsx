@@ -217,68 +217,125 @@ const FloodFeatureInfoHandler: React.FC<{
   layer: ProjectFloodLayer | null;
 }> = ({ enabled, layer }) => {
   const map = useMap();
+  const hoverTimeoutRef = useRef<number | null>(null);
+  const hoverRequestRef = useRef(0);
 
   useEffect(() => {
     const container = map.getContainer();
-    const previousCursor = container.style.cursor;
 
-    if (enabled && layer) {
-      container.style.cursor = "crosshair";
+    if (!enabled || !layer) {
+      container.style.cursor = "";
     }
 
     return () => {
-      container.style.cursor = previousCursor;
+      if (hoverTimeoutRef.current !== null) {
+        window.clearTimeout(hoverTimeoutRef.current);
+      }
+      container.style.cursor = "";
     };
   }, [enabled, layer, map]);
 
+  const buildFeatureInfoUrl = (latlng: L.LatLng, point: L.Point) => {
+    if (!layer) {
+      return null;
+    }
+
+    const size = map.getSize();
+    const bounds = map.getBounds();
+    const crs = map.options.crs ?? L.CRS.EPSG3857;
+    const sw = crs.project(bounds.getSouthWest());
+    const ne = crs.project(bounds.getNorthEast());
+
+    const params = new URLSearchParams({
+      service: "WMS",
+      version: "1.1.1",
+      request: "GetFeatureInfo",
+      layers: layer.geoserver_layer,
+      query_layers: layer.geoserver_layer,
+      styles: layer.style || "",
+      bbox: `${sw.x},${sw.y},${ne.x},${ne.y}`,
+      height: String(size.y),
+      width: String(size.x),
+      srs: "EPSG:3857",
+      info_format: "application/json",
+      feature_count: "1",
+      x: String(Math.round(point.x)),
+      y: String(Math.round(point.y)),
+    });
+
+    return `${layer.wms_url}?${params.toString()}`;
+  };
+
+  const readFloodDepthValue = async (latlng: L.LatLng, point: L.Point) => {
+    const url = buildFeatureInfoUrl(latlng, point);
+
+    if (!url) {
+      return null;
+    }
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      return null;
+    }
+
+    const data = await res.json();
+    const feature = data?.features?.[0];
+    const rawValue =
+      feature?.properties?.GRAY_INDEX ??
+      feature?.properties?.gray_index ??
+      feature?.properties?.value;
+    const value = Number(rawValue);
+
+    return Number.isFinite(value) && value > 0 ? value : null;
+  };
+
   useMapEvents({
+    mousemove(event) {
+      const container = map.getContainer();
+
+      if (!enabled || !layer) {
+        container.style.cursor = "";
+        return;
+      }
+
+      if (hoverTimeoutRef.current !== null) {
+        window.clearTimeout(hoverTimeoutRef.current);
+      }
+
+      const requestId = hoverRequestRef.current + 1;
+      hoverRequestRef.current = requestId;
+
+      hoverTimeoutRef.current = window.setTimeout(() => {
+        const point = map.latLngToContainerPoint(event.latlng);
+
+        readFloodDepthValue(event.latlng, point)
+          .then((value) => {
+            if (hoverRequestRef.current === requestId) {
+              container.style.cursor = value !== null ? "crosshair" : "";
+            }
+          })
+          .catch(() => {
+            if (hoverRequestRef.current === requestId) {
+              container.style.cursor = "";
+            }
+          });
+      }, 250);
+    },
+    mouseout() {
+      map.getContainer().style.cursor = "";
+    },
     click(event) {
       if (!enabled || !layer) {
         return;
       }
 
-      const size = map.getSize();
-      const bounds = map.getBounds();
-      const crs = map.options.crs ?? L.CRS.EPSG3857;
-      const sw = crs.project(bounds.getSouthWest());
-      const ne = crs.project(bounds.getNorthEast());
       const point = map.latLngToContainerPoint(event.latlng);
 
-      const params = new URLSearchParams({
-        service: "WMS",
-        version: "1.1.1",
-        request: "GetFeatureInfo",
-        layers: layer.geoserver_layer,
-        query_layers: layer.geoserver_layer,
-        styles: layer.style || "",
-        bbox: `${sw.x},${sw.y},${ne.x},${ne.y}`,
-        height: String(size.y),
-        width: String(size.x),
-        srs: "EPSG:3857",
-        info_format: "application/json",
-        feature_count: "1",
-        x: String(Math.round(point.x)),
-        y: String(Math.round(point.y)),
-      });
-
-      fetch(`${layer.wms_url}?${params.toString()}`)
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Unable to query flood depth.");
-          }
-
-          return res.json();
-        })
-        .then((data) => {
-          const feature = data?.features?.[0];
-          const rawValue =
-            feature?.properties?.GRAY_INDEX ??
-            feature?.properties?.gray_index ??
-            feature?.properties?.value;
-          const value = Number(rawValue);
-
+      readFloodDepthValue(event.latlng, point)
+        .then((value) => {
           const content =
-            Number.isFinite(value) && value > 0
+            value !== null
               ? `<strong>${layer.name}</strong><br/>Depth: ${value.toFixed(2)} m`
               : `<strong>${layer.name}</strong><br/>No flood depth value`;
 
