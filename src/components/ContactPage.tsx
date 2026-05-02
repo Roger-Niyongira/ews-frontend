@@ -1,14 +1,24 @@
 import React, { useState } from "react";
 
+const CONTACT_EMAIL = "hydromodservices@gmail.com";
+
+const initialForm = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  organization: "",
+  inquiry: "",
+};
+
 const ContactPage = () => {
-  const [form, setForm] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    organization: "",
-    inquiry: "",
-  });
+  const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "";
+  const [form, setForm] = useState(initialForm);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [submitTone, setSubmitTone] = useState<"success" | "warning" | "danger">(
+    "success"
+  );
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -16,10 +26,71 @@ const ContactPage = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const buildMailtoUrl = () => {
+    const fullName = `${form.firstName} ${form.lastName}`.trim();
+    const subject = encodeURIComponent(
+      `Contact request from ${fullName || form.email}`
+    );
+    const body = encodeURIComponent(
+      [
+        `Name: ${fullName}`,
+        `Email: ${form.email}`,
+        `Phone: ${form.phone || "Not provided"}`,
+        `Organization: ${form.organization || "Not provided"}`,
+        "",
+        "Message:",
+        form.inquiry,
+      ].join("\n")
+    );
+
+    return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(form);
-    alert("Submitted");
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contact/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...form,
+          recipient: CONTACT_EMAIL,
+          source: "contact-page",
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Unable to send your message right now.";
+
+        try {
+          const data = await response.json();
+          errorMessage = data.detail || data.error || errorMessage;
+        } catch {
+          // Keep the generic message when the backend does not return JSON.
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      setSubmitTone("success");
+      setSubmitMessage(
+        "Thanks. Your message has been sent to Hydromod Services."
+      );
+      setForm(initialForm);
+    } catch {
+      window.location.href = buildMailtoUrl();
+      setSubmitTone("warning");
+      setSubmitMessage(
+        "We're unable to submit your message right now. Please use the email window that opened to message us directly."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -38,6 +109,15 @@ const ContactPage = () => {
               <p className="mb-0 opacity-75">
                 Send us your question, feedback, or partnership inquiry and we
                 will respond as soon as possible.
+              </p>
+              <p className="mb-0 mt-3">
+                Email us directly:{" "}
+                <a
+                  className="link-light fw-semibold"
+                  href={`mailto:${CONTACT_EMAIL}`}
+                >
+                  {CONTACT_EMAIL}
+                </a>
               </p>
             </div>
 
@@ -138,10 +218,29 @@ const ContactPage = () => {
                   </div>
 
                   <div className="col-12 d-flex justify-content-center pt-2">
-                    <button type="submit" className="btn btn-primary btn-lg px-4">
-                      Send Message
+                    <button
+                      type="submit"
+                      className="btn btn-primary btn-lg px-4"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Sending..." : "Send Message"}
                     </button>
                   </div>
+
+                  {submitMessage && (
+                    <div className="col-12">
+                      <div
+                        className={`alert alert-${submitTone} mb-0`}
+                        role="status"
+                      >
+                        {submitMessage} You can also email{" "}
+                        <a href={`mailto:${CONTACT_EMAIL}`}>
+                          {CONTACT_EMAIL}
+                        </a>
+                        .
+                      </div>
+                    </div>
+                  )}
                 </div>
               </form>
             </div>
