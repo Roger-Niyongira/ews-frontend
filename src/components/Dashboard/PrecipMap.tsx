@@ -54,6 +54,13 @@ interface WatershedFeatureSummary {
   feature: GeoJSON.Feature | null;
 }
 
+interface ManualLayerMatch {
+  watershedName: string;
+  watershedLabel: string;
+  floodLabel: string;
+  floodLayerKey: string;
+}
+
 type PrecipitationScope = "all" | "watersheds" | "polygon";
 type LatLngTuple = [number, number];
 type LngLatTuple = [number, number];
@@ -70,6 +77,92 @@ const FLOOD_DEPTH_RANGES = [
   { color: "#08306b", label: "2 - 5" },
   { color: "#3f007d", label: "> 5" },
 ];
+
+const MANUAL_LAYER_MATCHES: ManualLayerMatch[] = [
+  {
+    watershedName: "BV_AGADEZ1",
+    watershedLabel: "BV Agadez 1",
+    floodLabel: "FloodMap Agadez",
+    floodLayerKey: "Agadez",
+  },
+  {
+    watershedName: "BV_AGADEZ2",
+    watershedLabel: "BV Agadez 2",
+    floodLabel: "FloodMap Agadez",
+    floodLayerKey: "Agadez",
+  },
+  {
+    watershedName: "BV_DIFFA",
+    watershedLabel: "BV Diffa",
+    floodLabel: "FloodMap Diffa",
+    floodLayerKey: "Diffa",
+  },
+  {
+    watershedName: "BV_GUIDAN_ROUMJI",
+    watershedLabel: "BV Guidan Roumji",
+    floodLabel: "FloodMap Guidan Roumji",
+    floodLayerKey: "Guidan Roumji",
+  },
+  {
+    watershedName: "BV_MARADI",
+    watershedLabel: "BV Maradi",
+    floodLabel: "FloodMap Maradi",
+    floodLayerKey: "Maradi",
+  },
+  {
+    watershedName: "BV_NIAMEY",
+    watershedLabel: "BV Niamey",
+    floodLabel: "FloodMap Niamey",
+    floodLayerKey: "Niamey",
+  },
+  {
+    watershedName: "BV_SOULOULOU",
+    watershedLabel: "BV Souloulou",
+    floodLabel: "FloodMap Souloulou",
+    floodLayerKey: "Souloulou",
+  },
+];
+
+const normalizeManualMatchValue = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+
+const getManualLayerMatch = (watershedName: string) => {
+  const normalizedWatershedName = normalizeManualMatchValue(watershedName);
+
+  return (
+    MANUAL_LAYER_MATCHES.find(
+      (match) =>
+        normalizeManualMatchValue(match.watershedName) === normalizedWatershedName
+    ) ?? null
+  );
+};
+
+const findManualFloodLayer = (
+  layers: ProjectFloodLayer[],
+  floodLayerKey: string,
+  selectedHazard: string,
+  selectedReturnPeriod: string
+) => {
+  const normalizedFloodLayerKey = normalizeManualMatchValue(floodLayerKey);
+
+  return (
+    layers.find((layer) => {
+      const normalizedLayerName = normalizeManualMatchValue(
+        `${layer.name} ${layer.geoserver_layer}`
+      );
+
+      return (
+        normalizedLayerName.includes(normalizedFloodLayerKey) &&
+        (!selectedHazard || layer.hazard === selectedHazard) &&
+        (!selectedReturnPeriod || layer.return_period === selectedReturnPeriod)
+      );
+    }) ?? null
+  );
+};
 
 const Legend: React.FC = () => {
   const map = useMap();
@@ -421,6 +514,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
   const canUseWatershedScope = availableWatersheds.length > 0;
   const [selectedFloodHazard, setSelectedFloodHazard] = useState<string>("");
   const [selectedFloodReturnPeriod, setSelectedFloodReturnPeriod] = useState<string>("");
+  const [selectedManualFloodKey, setSelectedManualFloodKey] = useState<string | null>(null);
   const previousFloodHazardRef = useRef<string>("");
 
   const floodHazards = useMemo(
@@ -448,13 +542,28 @@ const MapPanel: React.FC<MapPanelProps> = ({
   );
 
   const activeFloodLayer = useMemo(
-    () =>
-      projectFloodLayers.find(
+    () => {
+      if (selectedManualFloodKey) {
+        return findManualFloodLayer(
+          projectFloodLayers,
+          selectedManualFloodKey,
+          selectedFloodHazard,
+          selectedFloodReturnPeriod
+        );
+      }
+
+      return projectFloodLayers.find(
         (layer) =>
           layer.hazard === selectedFloodHazard &&
           layer.return_period === selectedFloodReturnPeriod
-      ) ?? null,
-    [projectFloodLayers, selectedFloodHazard, selectedFloodReturnPeriod]
+      ) ?? null;
+    },
+    [
+      projectFloodLayers,
+      selectedFloodHazard,
+      selectedFloodReturnPeriod,
+      selectedManualFloodKey,
+    ]
   );
 
   const getWatershedFeatureSummary = (
@@ -544,6 +653,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
     if (projectFloodLayers.length === 0) {
       setSelectedFloodHazard("");
       setSelectedFloodReturnPeriod("");
+      setSelectedManualFloodKey(null);
       return;
     }
 
@@ -810,42 +920,145 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
               {projectWatersheds.length > 0 && (
                 <div className="mb-3">
-                  <div className="fw-semibold mb-2">Watersheds</div>
+                  <div className="fw-semibold mb-2">Zoom to Layers</div>
                   <div className="list-group">
                     {availableWatersheds.length > 0
-                      ? watershedFeatureSummaries.map((feature) => (
-                          <div
-                            key={feature.key}
-                            className="list-group-item py-2 px-2"
-                            style={{
-                              backgroundColor: "#3a4047",
-                              color: "#f8f9fa",
-                              borderColor: "#4b535c",
-                              cursor: feature.feature ? "pointer" : "default",
-                            }}
-                            onClick={() => handleWatershedSelect(feature.feature)}
-                          >
-                            <div>{feature.name}</div>
-                          </div>
-                        ))
-                      : projectWatersheds.map((layer) => (
-                          <div
-                            key={layer.id}
-                            className="list-group-item py-2 px-2"
-                            style={{
-                              backgroundColor: "#3a4047",
-                              color: "#f8f9fa",
-                              borderColor: "#4b535c",
-                            }}
-                          >
-                            <div>{layer.name}</div>
-                            {!layer.geojsonData && (
-                              <div className="small" style={{ color: "#ffb3b3" }}>
-                                Layer file found, but geometry could not be loaded yet.
+                      ? watershedFeatureSummaries.map((feature) => {
+                          const manualMatch = getManualLayerMatch(feature.name);
+                          const manualFloodLayer = manualMatch
+                            ? findManualFloodLayer(
+                                projectFloodLayers,
+                                manualMatch.floodLayerKey,
+                                selectedFloodHazard,
+                                selectedFloodReturnPeriod
+                              )
+                            : null;
+                          const isManualFloodSelected =
+                            Boolean(manualMatch) &&
+                            selectedManualFloodKey === manualMatch?.floodLayerKey;
+
+                          return (
+                            <div
+                              key={feature.key}
+                              className="list-group-item py-2 px-2"
+                              style={{
+                                backgroundColor: "#3a4047",
+                                color: "#f8f9fa",
+                                borderColor: "#4b535c",
+                              }}
+                            >
+                              <div className="d-flex flex-wrap align-items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-light text-start"
+                                  style={{
+                                    flex: "1 1 150px",
+                                    whiteSpace: "normal",
+                                    minWidth: 0,
+                                  }}
+                                  disabled={!feature.feature}
+                                  onClick={() => handleWatershedSelect(feature.feature)}
+                                >
+                                  {manualMatch?.watershedLabel ?? feature.name}
+                                </button>
+
+                                {manualMatch && (
+                                  <button
+                                    type="button"
+                                    className={`btn btn-sm ${
+                                      isManualFloodSelected
+                                        ? "btn-info"
+                                        : "btn-outline-light"
+                                    } text-start`}
+                                    style={{
+                                      flex: "1 1 150px",
+                                      whiteSpace: "normal",
+                                      minWidth: 0,
+                                    }}
+                                    disabled={!manualFloodLayer}
+                                    onClick={() =>
+                                      setSelectedManualFloodKey(
+                                        manualMatch.floodLayerKey
+                                      )
+                                    }
+                                  >
+                                    {manualMatch.floodLabel}
+                                  </button>
+                                )}
                               </div>
-                            )}
-                          </div>
-                        ))}
+                            </div>
+                          );
+                        })
+                      : projectWatersheds.map((layer) => {
+                          const manualMatch = getManualLayerMatch(layer.name);
+                          const manualFloodLayer = manualMatch
+                            ? findManualFloodLayer(
+                                projectFloodLayers,
+                                manualMatch.floodLayerKey,
+                                selectedFloodHazard,
+                                selectedFloodReturnPeriod
+                              )
+                            : null;
+                          const isManualFloodSelected =
+                            Boolean(manualMatch) &&
+                            selectedManualFloodKey === manualMatch?.floodLayerKey;
+
+                          return (
+                            <div
+                              key={layer.id}
+                              className="list-group-item py-2 px-2"
+                              style={{
+                                backgroundColor: "#3a4047",
+                                color: "#f8f9fa",
+                                borderColor: "#4b535c",
+                              }}
+                            >
+                              <div className="d-flex flex-wrap align-items-center gap-2">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-light text-start"
+                                  style={{
+                                    flex: "1 1 150px",
+                                    whiteSpace: "normal",
+                                    minWidth: 0,
+                                  }}
+                                  disabled
+                                >
+                                  {manualMatch?.watershedLabel ?? layer.name}
+                                </button>
+
+                                {manualMatch && (
+                                  <button
+                                    type="button"
+                                    className={`btn btn-sm ${
+                                      isManualFloodSelected
+                                        ? "btn-info"
+                                        : "btn-outline-light"
+                                    } text-start`}
+                                    style={{
+                                      flex: "1 1 150px",
+                                      whiteSpace: "normal",
+                                      minWidth: 0,
+                                    }}
+                                    disabled={!manualFloodLayer}
+                                    onClick={() =>
+                                      setSelectedManualFloodKey(
+                                        manualMatch.floodLayerKey
+                                      )
+                                    }
+                                  >
+                                    {manualMatch.floodLabel}
+                                  </button>
+                                )}
+                              </div>
+                              {!layer.geojsonData && (
+                                <div className="small mt-2" style={{ color: "#ffb3b3" }}>
+                                  Layer file found, but geometry could not be loaded yet.
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                   </div>
                 </div>
               )}
