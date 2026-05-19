@@ -74,12 +74,13 @@ const DEFAULT_FLOOD_RETURN_PERIOD_BY_HAZARD: Record<string, string> = {
 };
 
 const FLOOD_DEPTH_RANGES = [
-  { color: "#d6f3ff", label: "0.05 - 0.25" },
-  { color: "#8bd8ff", label: "0.25 - 0.5" },
-  { color: "#39a9f5", label: "0.5 - 1" },
-  { color: "#0b6fb3", label: "1 - 2" },
-  { color: "#08306b", label: "2 - 5" },
-  { color: "#3f007d", label: "> 5" },
+  { color: "#d95f02", label: "< 0" },
+  { color: "#d6f3ff", label: "0.0 - 0.01" },
+  { color: "#8bd8ff", label: "0.01 - 0.25" },
+  { color: "#39a9f5", label: "0.25 - 0.5" },
+  { color: "#0b6fb3", label: "0.5 - 1" },
+  { color: "#08306b", label: "1 - 2" },
+  { color: "#3f007d", label: "> 2" },
 ];
 
 const MANUAL_LAYER_MATCHES: ManualLayerMatch[] = [
@@ -1184,14 +1185,14 @@ const MapPanel: React.FC<MapPanelProps> = ({
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="OpenStreetMap">
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a>'
+              attribution='&copy; <a href="https://www.openstreetmap.org/">OSM</a> | Precipitation data: ECMWF'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
           </LayersControl.BaseLayer>
 
           <LayersControl.BaseLayer name="Google Hybrid">
             <TileLayer
-              attribution="Imagery © Google"
+              attribution="Imagery © Google | Precipitation data: ECMWF"
               url="https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}"
               subdomains={["mt0", "mt1", "mt2", "mt3"]}
             />
