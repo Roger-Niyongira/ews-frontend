@@ -58,6 +58,9 @@ interface WatershedFeatureSummary {
 interface ManualLayerMatch {
   watershedName: string;
   watershedLabel: string;
+}
+
+interface ManualFloodMap {
   floodLabel: string;
   floodLayerKey: string;
 }
@@ -83,45 +86,43 @@ const MANUAL_LAYER_MATCHES: ManualLayerMatch[] = [
   {
     watershedName: "BV_AGADEZ1",
     watershedLabel: "BV Agadez 1",
-    floodLabel: "FloodMap Agadez",
-    floodLayerKey: "Agadez",
   },
   {
     watershedName: "BV_AGADEZ2",
     watershedLabel: "BV Agadez 2",
-    floodLabel: "FloodMap Agadez",
-    floodLayerKey: "Agadez",
   },
   {
     watershedName: "BV_DIFFA",
     watershedLabel: "BV Diffa",
-    floodLabel: "FloodMap Diffa",
-    floodLayerKey: "Diffa",
   },
   {
     watershedName: "BV_GUIDAN_ROUMJI",
     watershedLabel: "BV Guidan Roumji",
-    floodLabel: "FloodMap Guidan Roumji",
-    floodLayerKey: "Guidan Roumji",
   },
   {
     watershedName: "BV_MARADI",
     watershedLabel: "BV Maradi",
-    floodLabel: "FloodMap Maradi",
-    floodLayerKey: "Maradi",
   },
   {
     watershedName: "BV_NIAMEY",
     watershedLabel: "BV Niamey",
-    floodLabel: "FloodMap Niamey",
-    floodLayerKey: "Niamey",
   },
   {
     watershedName: "BV_SOULOULOU",
     watershedLabel: "BV Souloulou",
-    floodLabel: "FloodMap Souloulou",
-    floodLayerKey: "Souloulou",
   },
+];
+
+const MANUAL_FLOOD_MAPS: ManualFloodMap[] = [
+  { floodLabel: "FloodMap Agadez", floodLayerKey: "Agadez" },
+  { floodLabel: "FloodMap Diffa", floodLayerKey: "Diffa" },
+  { floodLabel: "FloodMap Gaya", floodLayerKey: "Gaya" },
+  { floodLabel: "FloodMap Guidan Roumdji", floodLayerKey: "Guidan Roumdji" },
+  { floodLabel: "FloodMap Maradi et Tibiri", floodLayerKey: "Maradi et Tibiri" },
+  { floodLabel: "FloodMap Niamey", floodLayerKey: "Niamey" },
+  { floodLabel: "FloodMap Tahoua", floodLayerKey: "Tahoua" },
+  { floodLabel: "FloodMap Tchirozerine", floodLayerKey: "Tchirozerine" },
+  { floodLabel: "FloodMap Tessaoua", floodLayerKey: "Tessaoua" },
 ];
 
 const normalizeManualMatchValue = (value: string) =>
@@ -762,7 +763,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
     }
   };
 
-  const handleManualFloodMapSelect = (match: ManualLayerMatch) => {
+  const handleManualFloodMapSelect = (match: ManualFloodMap) => {
     setSelectedManualFloodKey(match.floodLayerKey);
 
     const extentFeature = findFloodExtentFeature(
@@ -779,8 +780,8 @@ const MapPanel: React.FC<MapPanelProps> = ({
 
     if (bounds.isValid()) {
       mapInstance.fitBounds(bounds, {
-        padding: [12, 12],
-        maxZoom: 16,
+        padding: [24, 24],
+        maxZoom: 15,
       });
     }
   };
@@ -970,162 +971,119 @@ const MapPanel: React.FC<MapPanelProps> = ({
                 )}
               </div>
 
-              {projectWatersheds.length > 0 && (
+              {(projectWatersheds.length > 0 || projectFloodLayers.length > 0) && (
                 <div className="mb-3">
                   <div className="fw-semibold mb-2">Zoom to Layers</div>
-                  <div className="list-group">
-                    {availableWatersheds.length > 0
-                      ? watershedFeatureSummaries.map((feature) => {
-                          const manualMatch = getManualLayerMatch(feature.name);
-                          const manualFloodLayer = manualMatch
-                            ? findManualFloodLayer(
-                                projectFloodLayers,
-                                manualMatch.floodLayerKey,
-                                selectedFloodHazard,
-                                selectedFloodReturnPeriod
-                              )
-                            : null;
-                          const manualFloodExtentFeature = manualMatch
-                            ? findFloodExtentFeature(
-                                projectFloodExtents,
-                                manualMatch.floodLayerKey
-                              )
-                            : null;
-                          const isManualFloodSelected =
-                            Boolean(manualMatch) &&
-                            selectedManualFloodKey === manualMatch?.floodLayerKey;
+                  <div className="d-flex gap-2 align-items-start">
+                    {projectFloodLayers.length > 0 && (
+                      <div style={{ flex: "1 1 0", minWidth: 0 }}>
+                        <div className="small mb-2" style={{ color: "#c7ced6" }}>
+                          Flood Maps
+                        </div>
+                        <div className="d-flex flex-column gap-2">
+                          {MANUAL_FLOOD_MAPS.map((floodMap) => {
+                            const manualFloodLayer = findManualFloodLayer(
+                              projectFloodLayers,
+                              floodMap.floodLayerKey,
+                              selectedFloodHazard,
+                              selectedFloodReturnPeriod
+                            );
+                            const manualFloodExtentFeature = findFloodExtentFeature(
+                              projectFloodExtents,
+                              floodMap.floodLayerKey
+                            );
+                            const isManualFloodSelected =
+                              selectedManualFloodKey === floodMap.floodLayerKey;
 
-                          return (
-                            <div
-                              key={feature.key}
-                              className="list-group-item py-2 px-2"
-                              style={{
-                                backgroundColor: "#3a4047",
-                                color: "#f8f9fa",
-                                borderColor: "#4b535c",
-                              }}
-                            >
-                              <div className="d-flex flex-wrap align-items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-light text-start"
-                                  style={{
-                                    flex: "1 1 150px",
-                                    whiteSpace: "normal",
-                                    minWidth: 0,
-                                  }}
-                                  disabled={!feature.feature}
-                                  onClick={() => handleWatershedSelect(feature.feature)}
-                                >
-                                  {manualMatch?.watershedLabel ?? feature.name}
-                                </button>
+                            return (
+                              <button
+                                key={floodMap.floodLayerKey}
+                                type="button"
+                                className={`btn btn-sm ${
+                                  isManualFloodSelected
+                                    ? "btn-info"
+                                    : "btn-outline-light"
+                                } text-start`}
+                                style={{
+                                  whiteSpace: "normal",
+                                  minWidth: 0,
+                                }}
+                                disabled={
+                                  !manualFloodLayer && !manualFloodExtentFeature
+                                }
+                                onClick={() => handleManualFloodMapSelect(floodMap)}
+                              >
+                                {floodMap.floodLabel}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
-                                {manualMatch && (
+                    {projectWatersheds.length > 0 && (
+                      <div style={{ flex: "1 1 0", minWidth: 0 }}>
+                        <div className="small mb-2" style={{ color: "#c7ced6" }}>
+                          Watersheds
+                        </div>
+                        <div className="d-flex flex-column gap-2">
+                          {availableWatersheds.length > 0
+                            ? watershedFeatureSummaries.map((feature) => {
+                                const manualMatch = getManualLayerMatch(feature.name);
+
+                                return (
                                   <button
+                                    key={feature.key}
                                     type="button"
-                                    className={`btn btn-sm ${
-                                      isManualFloodSelected
-                                        ? "btn-info"
-                                        : "btn-outline-light"
-                                    } text-start`}
+                                    className="btn btn-sm btn-outline-light text-start"
                                     style={{
-                                      flex: "1 1 150px",
                                       whiteSpace: "normal",
                                       minWidth: 0,
                                     }}
-                                    disabled={
-                                      !manualFloodLayer && !manualFloodExtentFeature
-                                    }
-                                    onClick={() => handleManualFloodMapSelect(manualMatch)}
+                                    disabled={!feature.feature}
+                                    onClick={() => handleWatershedSelect(feature.feature)}
                                   >
-                                    {manualMatch.floodLabel}
+                                    {manualMatch?.watershedLabel ?? feature.name}
                                   </button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      : projectWatersheds.map((layer) => {
-                          const manualMatch = getManualLayerMatch(layer.name);
-                          const manualFloodLayer = manualMatch
-                            ? findManualFloodLayer(
-                                projectFloodLayers,
-                                manualMatch.floodLayerKey,
-                                selectedFloodHazard,
-                                selectedFloodReturnPeriod
-                              )
-                            : null;
-                          const manualFloodExtentFeature = manualMatch
-                            ? findFloodExtentFeature(
-                                projectFloodExtents,
-                                manualMatch.floodLayerKey
-                              )
-                            : null;
-                          const isManualFloodSelected =
-                            Boolean(manualMatch) &&
-                            selectedManualFloodKey === manualMatch?.floodLayerKey;
+                                );
+                              })
+                            : projectWatersheds.map((layer) => {
+                                const manualMatch = getManualLayerMatch(layer.name);
 
-                          return (
-                            <div
-                              key={layer.id}
-                              className="list-group-item py-2 px-2"
-                              style={{
-                                backgroundColor: "#3a4047",
-                                color: "#f8f9fa",
-                                borderColor: "#4b535c",
-                              }}
-                            >
-                              <div className="d-flex flex-wrap align-items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-outline-light text-start"
-                                  style={{
-                                    flex: "1 1 150px",
-                                    whiteSpace: "normal",
-                                    minWidth: 0,
-                                  }}
-                                  disabled
-                                >
-                                  {manualMatch?.watershedLabel ?? layer.name}
-                                </button>
-
-                                {manualMatch && (
-                                  <button
-                                    type="button"
-                                    className={`btn btn-sm ${
-                                      isManualFloodSelected
-                                        ? "btn-info"
-                                        : "btn-outline-light"
-                                    } text-start`}
-                                    style={{
-                                      flex: "1 1 150px",
-                                      whiteSpace: "normal",
-                                      minWidth: 0,
-                                    }}
-                                    disabled={
-                                      !manualFloodLayer && !manualFloodExtentFeature
-                                    }
-                                    onClick={() => handleManualFloodMapSelect(manualMatch)}
-                                  >
-                                    {manualMatch.floodLabel}
-                                  </button>
-                                )}
-                              </div>
-                              {!layer.geojsonData && (
-                                <div className="small mt-2" style={{ color: "#ffb3b3" }}>
-                                  Layer file found, but geometry could not be loaded yet.
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                                return (
+                                  <div key={layer.id}>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm btn-outline-light text-start w-100"
+                                      style={{
+                                        whiteSpace: "normal",
+                                        minWidth: 0,
+                                      }}
+                                      disabled
+                                    >
+                                      {manualMatch?.watershedLabel ?? layer.name}
+                                    </button>
+                                    {!layer.geojsonData && (
+                                      <div
+                                        className="small mt-1"
+                                        style={{ color: "#ffb3b3" }}
+                                      >
+                                        Layer file found, but geometry could not be loaded yet.
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
 
               {projectFloodLayers.length > 0 && (
-                <div>
-                  <div className="fw-semibold mb-2">Flood Maps</div>
+                <div className="pt-3" style={{ borderTop: "1px solid #5a646f" }}>
+                  <div className="fw-semibold mb-2">Select Flood Maps</div>
                   <div className="d-flex flex-wrap gap-2 mb-2">
                     {floodHazards.map((hazard) => (
                       <button
