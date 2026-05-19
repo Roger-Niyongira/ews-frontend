@@ -20,6 +20,7 @@ interface BodyProps {
   projectName: string | null;
   projectWatersheds: ProjectGeoJsonLayer[];
   projectFloodLayers: ProjectFloodLayer[];
+  projectFloodExtents: GeoJSON.FeatureCollection | null;
   thresholds: ClimateThresholds;
   onPrecipitationAvailabilityChange: (
     available: boolean,
@@ -50,6 +51,7 @@ const Body: React.FC<BodyProps> = ({
   projectName,
   projectWatersheds,
   projectFloodLayers,
+  projectFloodExtents,
   thresholds,
   onPrecipitationAvailabilityChange,
 }) => {
@@ -135,6 +137,7 @@ const Body: React.FC<BodyProps> = ({
             projectName={projectName}
             projectWatersheds={projectWatersheds}
             projectFloodLayers={projectFloodLayers}
+            projectFloodExtents={projectFloodExtents}
           />
           <button
             type="button"

@@ -99,6 +99,8 @@ function App() {
   const [projects, setProjects] = useState<UserProject[]>([]);
   const [projectWatersheds, setProjectWatersheds] = useState<ProjectGeoJsonLayer[]>([]);
   const [projectFloodLayers, setProjectFloodLayers] = useState<ProjectFloodLayer[]>([]);
+  const [projectFloodExtents, setProjectFloodExtents] =
+    useState<GeoJSON.FeatureCollection | null>(null);
   const watershedStatus: "public" | "private" | "none" =
     projectWatersheds.length > 0 && selectedProject ? "private" : "none";
   const userCanAccessWatersheds =
@@ -137,6 +139,7 @@ function App() {
       setProjects([]);
       setSelectedProject(null);
       setProjectFloodLayers([]);
+      setProjectFloodExtents(null);
       return;
     }
 
@@ -173,6 +176,7 @@ function App() {
         setProjects([]);
         setSelectedProject(null);
         setProjectFloodLayers([]);
+        setProjectFloodExtents(null);
       });
   }, [API_BASE_URL, accessToken]);
 
@@ -234,6 +238,7 @@ function App() {
     if (!selectedProject || !accessToken) {
       setProjectFloodLayers([]);
       setShowFloodMap(false);
+      setProjectFloodExtents(null);
       return;
     }
 
@@ -252,6 +257,23 @@ function App() {
         setProjectFloodLayers([]);
         setShowFloodMap(false);
       });
+  }, [API_BASE_URL, accessToken, selectedProject]);
+
+  useEffect(() => {
+    if (!selectedProject || !accessToken) {
+      setProjectFloodExtents(null);
+      return;
+    }
+
+    axios
+      .get<GeoJSON.FeatureCollection>(
+        `${API_BASE_URL}/api/projects/${selectedProject.slug}/flood-extents/`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      )
+      .then((res) => setProjectFloodExtents(res.data))
+      .catch(() => setProjectFloodExtents(null));
   }, [API_BASE_URL, accessToken, selectedProject]);
 
   const handleApplyThresholds = (nextThresholds: ClimateThresholds) => {
@@ -319,6 +341,7 @@ function App() {
     setProjects([]);
     setSelectedProject(null);
     setProjectFloodLayers([]);
+    setProjectFloodExtents(null);
     setShowProjects(false);
   };
 
@@ -380,6 +403,7 @@ function App() {
                   projectName={selectedProject?.name ?? null}
                   projectWatersheds={projectWatersheds}
                   projectFloodLayers={projectFloodLayers}
+                  projectFloodExtents={projectFloodExtents}
                   showWatersheds={showWatersheds}
                   thresholds={thresholds}
                   onPrecipitationAvailabilityChange={

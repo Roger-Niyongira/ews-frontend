@@ -44,6 +44,7 @@ interface MapPanelProps {
   projectName: string | null;
   projectWatersheds: ProjectGeoJsonLayer[];
   projectFloodLayers: ProjectFloodLayer[];
+  projectFloodExtents: GeoJSON.FeatureCollection | null;
   small?: boolean;
   style?: React.CSSProperties;
 }
@@ -159,6 +160,29 @@ const findManualFloodLayer = (
         normalizedLayerName.includes(normalizedFloodLayerKey) &&
         (!selectedHazard || layer.hazard === selectedHazard) &&
         (!selectedReturnPeriod || layer.return_period === selectedReturnPeriod)
+      );
+    }) ?? null
+  );
+};
+
+const findFloodExtentFeature = (
+  floodExtents: GeoJSON.FeatureCollection | null,
+  floodLayerKey: string
+) => {
+  const normalizedFloodLayerKey = normalizeManualMatchValue(floodLayerKey);
+
+  return (
+    floodExtents?.features.find((feature) => {
+      const properties =
+        feature.properties && typeof feature.properties === "object"
+          ? (feature.properties as Record<string, unknown>)
+          : {};
+      const normalizedRegion = normalizeManualMatchValue(String(properties.region ?? ""));
+      const normalizedName = normalizeManualMatchValue(String(properties.name ?? ""));
+
+      return (
+        normalizedRegion.includes(normalizedFloodLayerKey) ||
+        normalizedName.includes(normalizedFloodLayerKey)
       );
     }) ?? null
   );
@@ -495,6 +519,7 @@ const MapPanel: React.FC<MapPanelProps> = ({
   projectName,
   projectWatersheds,
   projectFloodLayers,
+  projectFloodExtents,
   small,
   style,
 }) => {
@@ -544,12 +569,16 @@ const MapPanel: React.FC<MapPanelProps> = ({
   const activeFloodLayer = useMemo(
     () => {
       if (selectedManualFloodKey) {
-        return findManualFloodLayer(
+        const manualFloodLayer = findManualFloodLayer(
           projectFloodLayers,
           selectedManualFloodKey,
           selectedFloodHazard,
           selectedFloodReturnPeriod
         );
+
+        if (manualFloodLayer) {
+          return manualFloodLayer;
+        }
       }
 
       return projectFloodLayers.find(
@@ -729,6 +758,29 @@ const MapPanel: React.FC<MapPanelProps> = ({
       mapInstance.fitBounds(bounds, {
         padding: [24, 24],
         maxZoom: 10,
+      });
+    }
+  };
+
+  const handleManualFloodMapSelect = (match: ManualLayerMatch) => {
+    setSelectedManualFloodKey(match.floodLayerKey);
+
+    const extentFeature = findFloodExtentFeature(
+      projectFloodExtents,
+      match.floodLayerKey
+    );
+
+    if (!extentFeature || !mapInstance) {
+      return;
+    }
+
+    const featureLayer = L.geoJSON(extentFeature as GeoJSON.GeoJsonObject);
+    const bounds = featureLayer.getBounds();
+
+    if (bounds.isValid()) {
+      mapInstance.fitBounds(bounds, {
+        padding: [12, 12],
+        maxZoom: 16,
       });
     }
   };
@@ -933,6 +985,12 @@ const MapPanel: React.FC<MapPanelProps> = ({
                                 selectedFloodReturnPeriod
                               )
                             : null;
+                          const manualFloodExtentFeature = manualMatch
+                            ? findFloodExtentFeature(
+                                projectFloodExtents,
+                                manualMatch.floodLayerKey
+                              )
+                            : null;
                           const isManualFloodSelected =
                             Boolean(manualMatch) &&
                             selectedManualFloodKey === manualMatch?.floodLayerKey;
@@ -975,12 +1033,10 @@ const MapPanel: React.FC<MapPanelProps> = ({
                                       whiteSpace: "normal",
                                       minWidth: 0,
                                     }}
-                                    disabled={!manualFloodLayer}
-                                    onClick={() =>
-                                      setSelectedManualFloodKey(
-                                        manualMatch.floodLayerKey
-                                      )
+                                    disabled={
+                                      !manualFloodLayer && !manualFloodExtentFeature
                                     }
+                                    onClick={() => handleManualFloodMapSelect(manualMatch)}
                                   >
                                     {manualMatch.floodLabel}
                                   </button>
@@ -997,6 +1053,12 @@ const MapPanel: React.FC<MapPanelProps> = ({
                                 manualMatch.floodLayerKey,
                                 selectedFloodHazard,
                                 selectedFloodReturnPeriod
+                              )
+                            : null;
+                          const manualFloodExtentFeature = manualMatch
+                            ? findFloodExtentFeature(
+                                projectFloodExtents,
+                                manualMatch.floodLayerKey
                               )
                             : null;
                           const isManualFloodSelected =
@@ -1040,12 +1102,10 @@ const MapPanel: React.FC<MapPanelProps> = ({
                                       whiteSpace: "normal",
                                       minWidth: 0,
                                     }}
-                                    disabled={!manualFloodLayer}
-                                    onClick={() =>
-                                      setSelectedManualFloodKey(
-                                        manualMatch.floodLayerKey
-                                      )
+                                    disabled={
+                                      !manualFloodLayer && !manualFloodExtentFeature
                                     }
+                                    onClick={() => handleManualFloodMapSelect(manualMatch)}
                                   >
                                     {manualMatch.floodLabel}
                                   </button>
