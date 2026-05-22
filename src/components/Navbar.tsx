@@ -91,6 +91,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 Preferences
               </button>
             </li>
+            {/*}
             <li className="nav-item">
               <button
                 className="nav-link text-white fw-bold btn btn-link"
@@ -103,6 +104,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 Instructions
               </button>
             </li>
+            */}
             <li className="nav-item">
               <Link className="nav-link text-white fw-bold" to="/about">
                 About

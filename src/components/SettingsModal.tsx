@@ -136,6 +136,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </section>
 
+          {/*}
           <section className="pt-4 border-top">
             <h4 className="h5 fw-bold mb-2">Climate Threshold Preferences</h4>
             <p className="text-muted mb-3">
@@ -255,6 +256,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             )}
           </section>
+          */}
         </div>
 
         <div className="d-flex flex-column flex-md-row justify-content-between gap-3 p-4 border-top bg-light">
