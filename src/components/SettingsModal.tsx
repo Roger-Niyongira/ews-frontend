@@ -32,7 +32,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       ).sort(),
     [defaultThresholds, thresholds]
   );
-  const [mode, setMode] = useState<EditorMode>("global");
+  const [mode] = useState<EditorMode>("global");
   const [draftThresholds, setDraftThresholds] = useState<ClimateThresholds>({});
   const [globalThresholds, setGlobalThresholds] = useState({
     green: 0,
@@ -51,23 +51,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       orange: baseThreshold?.orange ?? 0,
     });
   }, [defaultThresholds, thresholds, zoneNames]);
-
-  const handleZoneThresholdChange = (
-    zone: string,
-    field: "green" | "orange",
-    value: string
-  ) => {
-    const numericValue = Number(value);
-
-    setDraftThresholds((current) => ({
-      ...current,
-      [zone]: {
-        green: current[zone]?.green ?? defaultThresholds[zone]?.green ?? 0,
-        orange: current[zone]?.orange ?? defaultThresholds[zone]?.orange ?? 0,
-        [field]: Number.isFinite(numericValue) ? numericValue : 0,
-      },
-    }));
-  };
 
   const handleSave = () => {
     if (zoneNames.length === 0) {
