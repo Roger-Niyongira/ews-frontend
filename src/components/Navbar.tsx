@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Dropdown from "react-bootstrap/Dropdown";
-import Swal from "sweetalert2";
+// import Swal from "sweetalert2";
 import { Link, useLocation } from "react-router-dom";
 
 interface NavbarProps {
@@ -66,6 +66,11 @@ const Navbar: React.FC<NavbarProps> = ({
         >
           <ul className="navbar-nav">
             <li className="nav-item">
+              <Link className="nav-link text-white fw-bold" to="/about">
+                About
+              </Link>
+            </li>
+            <li className="nav-item">
               <Link className="nav-link text-white fw-bold" to="/">
                 Dashboard
               </Link>
@@ -76,7 +81,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 to="/planning"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Planning Tool
+                Planning
               </Link>
             </li>
             <li className="nav-item">
@@ -105,11 +110,6 @@ const Navbar: React.FC<NavbarProps> = ({
               </button>
             </li>
             */}
-            <li className="nav-item">
-              <Link className="nav-link text-white fw-bold" to="/about">
-                About
-              </Link>
-            </li>
           </ul>
 
           <Link
@@ -162,6 +162,7 @@ const Navbar: React.FC<NavbarProps> = ({
             </button>
           )}
 
+          {/*
           <button
             className="nav-link btn btn-link fw-bold d-flex align-items-center text-start mt-2 mt-lg-0"
             style={{
@@ -180,6 +181,7 @@ const Navbar: React.FC<NavbarProps> = ({
           >
             <i className="bi bi-globe me-1"></i> FR
           </button>
+          */}
         </div>
       </div>
     </nav>
