@@ -171,7 +171,7 @@ const AboutPage = () => {
               >
                 We turn static water models and disconnected datasets into
                 automated forecasting, flood mapping, and geospatial
-                decision-support systems.
+                decision-support systems
               </p>
 
               <div className="d-flex flex-wrap gap-3">
@@ -234,7 +234,7 @@ const AboutPage = () => {
                   letterSpacing: "-0.05em",
                 }}
               >
-                Your model should not stop at the final report.
+                Your model should not stop at the final report
               </h2>
 
               <p
@@ -246,7 +246,7 @@ const AboutPage = () => {
                   lineHeight: 1.8,
                 }}
               >
-                We develop hydrologic models and transform existing data and models into operational systems with interactive web dashboards.
+                We develop hydrologic models and transform existing data and models into operational systems with interactive web dashboards
               </p>
             </div>
 
@@ -267,15 +267,15 @@ const AboutPage = () => {
                     fontSize: "0.78rem",
                   }}
                 >
-                  Core capabilities
+                  OUR SERVICES
                 </div>
 
                 <div className="d-flex flex-column gap-3">
                   {[
-                    "Live web dashboards for your existing data",
+                    "Early Warning Systems",
                     "Hydrologic and hydraulic modelling",
                     "Operational forecasting",
-                    "Geospatial analysis",
+                    "Geospatial analysis"
                   ].map((item) => (
                     <div
                       className="d-flex align-items-center gap-3 rounded-3 px-3 py-3"
