@@ -303,7 +303,7 @@ const AboutPage = () => {
       {/* WORKFLOW */}
       <section style={{ backgroundColor: "#f8faf9" }}>
         <div
-          className="container-fluid py-5 py-lg-6"
+          className="container-fluid py-4 py-lg-5"
           style={{ maxWidth: "1240px" }}
         >
           <div
