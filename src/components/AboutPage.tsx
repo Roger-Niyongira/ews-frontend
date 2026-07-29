@@ -267,15 +267,14 @@ const AboutPage = () => {
                     fontSize: "0.78rem",
                   }}
                 >
-                  OUR SERVICES
+                  What we deliver
                 </div>
 
                 <div className="d-flex flex-column gap-3">
                   {[
-                    "Early Warning Systems",
-                    "Hydrologic and hydraulic modelling",
-                    "Operational forecasting",
-                    "Geospatial analysis"
+                    "Flood Early Warning Systems",
+                    "Operational Forecasting Platforms",
+                    "Geospatial Decision Support Systems"
                   ].map((item) => (
                     <div
                       className="d-flex align-items-center gap-3 rounded-3 px-3 py-3"
