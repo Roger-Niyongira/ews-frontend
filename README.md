@@ -1,19 +1,19 @@
 # EWS Platform (Frontend)
 
-Web-based early warning system for precipitation and flood risk monitoring across Africa.
+Demo project for a web-based early warning system using precipitations and publicly available data across African continent.
+Backend is run separately, contact for information and colaboration.
 
-## Features
-- Deterministic models precipitation visualization
-- City-level alert system (green / orange / red) for demonstration purpose only
-- Climate zone overlays for demonstration purpose only
-- Interactive map (React + Leaflet)
-
-## Tech Stack
-- React
-- TypeScript
-- Leaflet
+Future plans includes incorporating available flood maps from different researches. 
 
 ## Run locally
+
 ```bash
 npm install
 npm start
+```
+
+The backend runs separately and provides the forecast data.
+
+## Contact
+
+For backend access or collaboration, email rniyo007@uottawa.ca.
