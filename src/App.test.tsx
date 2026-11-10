@@ -14,6 +14,7 @@ test('renders app without crashing', async () => {
 
   render(
     <MemoryRouter
+    initialEntries={['/dashboard']}
       future={{
         v7_startTransition: true,
         v7_relativeSplatPath: true,
