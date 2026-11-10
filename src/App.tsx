@@ -391,7 +391,7 @@ function App() {
 
         <div className="flex-grow-1 d-flex overflow-hidden position-relative">
           <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/about" replace />} />
             <Route
               path="/dashboard"
               element={
@@ -424,7 +424,7 @@ function App() {
                 />
               }
             />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/about" replace />} />
           </Routes>
         </div>
       </div>

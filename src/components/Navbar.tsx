@@ -43,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({
       <div className={isFullWidthPage ? "container-fluid px-4" : "container"}>
         <a className="navbar-brand" href="/">
           <img
-            src={process.env.PUBLIC_URL + "/ews_icon.png"}
+            src={process.env.PUBLIC_URL + "images/favicon.ico"}
             alt="EWS Logo"
             style={{ height: "40px", marginRight: "10px" }}
           />

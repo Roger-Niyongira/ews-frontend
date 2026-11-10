@@ -39,7 +39,7 @@ const FlowDivider = ({ tone = "light" }: { tone?: "light" | "dark" }) => (
 const workflow = [
   {
     title: "Build",
-    text: "Develop new engineering models or evaluate existing models to define the best operational solution.",
+    text: "Develop new engineering models, evaluate existing models, propose optimal operational solutions.",
   },
   {
     title: "Operationalize",
@@ -175,12 +175,12 @@ const AboutPage = () => {
               </p>
 
               <div className="d-flex flex-wrap gap-3">
-                <a
-                  href="#services"
-                  className="btn btn-light rounded-3 px-4 py-3 fw-semibold"
-                >
-                  View Live Platform
-                </a>
+                <Link
+                    to="/dashboard"
+                    className="btn btn-light rounded-3 px-4 py-3 fw-semibold"
+                  >
+                    View Live Platform
+                </Link>
 
                 <Link
                   to="/contact"
@@ -234,7 +234,7 @@ const AboutPage = () => {
                   letterSpacing: "-0.05em",
                 }}
               >
-                Your model should not stop at the final report
+                Operationalize models beyond reports
               </h2>
 
               <p
@@ -246,7 +246,7 @@ const AboutPage = () => {
                   lineHeight: 1.8,
                 }}
               >
-                We develop hydrologic models and transform existing data and models into operational systems with interactive web dashboards
+                Develop hydrologic models, transform existing data and models into operational systems with interactive web dashboards
               </p>
             </div>
 
@@ -272,7 +272,7 @@ const AboutPage = () => {
 
                 <div className="d-flex flex-column gap-3">
                   {[
-                    "Flood Early Warning Systems",
+                    "Early Warning Systems",
                     "Operational Forecasting Platforms",
                     "Geospatial Decision Support Systems"
                   ].map((item) => (
