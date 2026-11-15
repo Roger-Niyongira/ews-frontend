@@ -71,7 +71,7 @@ const Navbar: React.FC<NavbarProps> = ({
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link text-white fw-bold" to="/">
+              <Link className="nav-link text-white fw-bold" to="/dashboard">
                 Dashboard
               </Link>
             </li>
@@ -84,7 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 Planning
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item d-none">
               <button
                 className="nav-link text-white fw-bold btn btn-link"
                 style={{ textDecoration: "none" }}
